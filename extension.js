@@ -2,6 +2,7 @@
 
 const AgentConnector = require('./lib/agent-connector')
 const AgentManager = require('./lib/agent-manager')
+const { initDevelopment } = require('./lib/development')
 const { initAgentStatusbar } = require('./lib/agent-statusbar')
 const { initAgentErrors } = require('./lib/agent-errors')
 
@@ -13,6 +14,7 @@ function activate(context) {
 
   initAgentStatusbar(agentManager)
   initAgentErrors({ agentManager })
+  initDevelopment({ agentManager })
 
   logInfo('"ns-vsx-dashboard" is now active!')
 }
