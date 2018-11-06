@@ -6,8 +6,27 @@
 </head>
 <body>
   <div id="app">
-    {{ message }}
-  </div>
+    <table>
+      <thead>
+        <tr>
+          <td>Name [pid]</td>
+          <td>Agent Id</td>
+          <td>Started</td>
+          <td>NodeEnv</td>
+          <td>Main</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="agent in agents">
+          <td>{{ agent.name }}</td>
+          <td>{{ agent.id }}</td>
+          <td>{{ agent.processStart }}</td>
+          <td>{{ agent.nodeEnv }}</td>
+          <td>{{ agent.main }}</td>
+        </tr>
+      </tbody>
+    </ul>
+  </table>
   <script type="text/javascript" charset="utf-8" src="main.js"></script>
 </body>
 </html>
