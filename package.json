@@ -17,19 +17,13 @@
   "contributes": {},
   "scripts": {
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node ./node_modules/vscode/bin/test",
-    "web:list": "budo web/list/main.js --dir web/list/",
-    "web:list:watch": "budo web/list/main.js --dir web/list/ --live"
+    "test": "node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
     "@types/node": "^8.10.25",
-    "budo": "^11.3.2",
     "eslint": "^4.11.0",
     "typescript": "^2.6.1",
     "vscode": "^1.1.21"
-  },
-  "dependencies": {
-    "vue": "~2.5.17"
   }
 }

@@ -1,32 +1,15 @@
+</html>
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset=utf-8 />
-  <title>Agent List</title>
-</head>
-<body>
-  <div id="app">
-    <table>
-      <thead>
-        <tr>
-          <td>Name [pid]</td>
-          <td>Agent Id</td>
-          <td>Started</td>
-          <td>NodeEnv</td>
-          <td>Main</td>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="agent in agents">
-          <td>{{ agent.name }}</td>
-          <td>{{ agent.id }}</td>
-          <td>{{ agent.processStart }}</td>
-          <td>{{ agent.nodeEnv }}</td>
-          <td>{{ agent.main }}</td>
-        </tr>
-      </tbody>
-    </ul>
-  </table>
-  <script type="text/javascript" charset="utf-8" src="main.js"></script>
-</body>
+<html lang="en">
+  <head>
+    <title>Agent List</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="./dist/build.js"></script>
+  </body>
 </html>
