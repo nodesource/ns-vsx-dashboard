@@ -1,7 +1,10 @@
 'use strict'
 
+const { commands } = require('vscode')
+
 const AgentConnector = require('./lib/agent-connector')
 const AgentManager = require('./lib/agent-manager')
+const AgentListView = require('./web/list/agent-list-view')
 const { initDevelopment } = require('./lib/development')
 const { initAgentStatusbar } = require('./lib/agent-statusbar')
 const { initAgentErrors } = require('./lib/agent-errors')
@@ -15,6 +18,14 @@ function activate(context) {
   initAgentStatusbar(agentManager)
   initAgentErrors({ agentManager })
   initDevelopment({ agentManager })
+
+  const agentListView = new AgentListView()
+  const showSummaryCommand =
+    commands.registerCommand(
+        'ns-vsx-dashboard:toggle-agent-list'
+      , () => agentListView.toggle()
+    )
+  context.subscriptions.push(showSummaryCommand)
 
   logInfo('"ns-vsx-dashboard" is now active!')
 }
