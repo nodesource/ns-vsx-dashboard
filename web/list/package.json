@@ -2,7 +2,8 @@
   "name": "ns-vsx-dashboard.agent-list-webview",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server --open --inline --hot",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "webview": "npm run build && ../../scripts/create-webview list"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
