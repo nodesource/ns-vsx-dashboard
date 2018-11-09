@@ -9,7 +9,7 @@
           <v-list-tile
             v-for="agent in agents"
             :key="agent.id"
-            @click="() => log('clicked')"
+            @click="() => onclick(agent.id)"
           >
             <v-list-tile-content>
               <v-list-tile-title>

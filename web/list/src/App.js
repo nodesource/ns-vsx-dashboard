@@ -1,7 +1,6 @@
 import agentsJSON from '../agents.json'
 import ta from 'time-ago'
 import prettyBytes from 'pretty-bytes'
-const agents = new Map(agentsJSON)
 const MAX_ID_LEN = 15
 const MAX_MAIN_LEN = 45
 
@@ -60,6 +59,7 @@ class App {
     // maintaining map for quick access of all agents and array for agents
     // that should be visisble in the UI
     this._data = { agentsMap: new Map(), agents: [] }
+    this._onselected = null
   }
 
   addInfo(id, info) {
@@ -91,6 +91,18 @@ class App {
     console.log(...args)
   }
 
+  set onselected(value) {
+    this._onselected = value
+  }
+
+  onclick(id) {
+    if (typeof this._onselected === 'function') {
+      this._onselected(id)
+    } else {
+      console.log('No agent list selected handler registered')
+    }
+  }
+
   _getOrCreate(id) {
     const { agentsMap } = this._data
     if (!agentsMap.has(id)) {
@@ -111,7 +123,8 @@ class App {
 
 export const app = new App()
 export const methods = {
-  log: app.log.bind(app)
+    log: app.log.bind(app)
+  , onclick: app.onclick.bind(app)
 }
 export const data = app.data.bind(app)
 
