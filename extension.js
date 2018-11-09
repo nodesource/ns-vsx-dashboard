@@ -19,7 +19,7 @@ function activate(context) {
   initAgentErrors({ agentManager })
   initDevelopment({ agentManager })
 
-  const agentListView = new AgentListView()
+  const agentListView = new AgentListView(agentManager)
   const showSummaryCommand =
     commands.registerCommand(
         'ns-vsx-dashboard:toggle-agent-list'
