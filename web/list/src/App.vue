@@ -6,7 +6,6 @@
           expand
           three-line
         >
-          <p id="text"></p>
           <v-list-tile
             v-for="agent in agents"
             :key="agent.id"

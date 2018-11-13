@@ -1,3 +1,6 @@
+import { format } from 'util'
+const DIAGNOSE = true
+
 class App {
   constructor() {
     // maintaining map for quick access of all agents and array for agents
@@ -31,8 +34,9 @@ class App {
     if (idx >= 0) this._data.agents.splice(idx, 1)
   }
 
-  log(...args) {
-    console.log(...args)
+  log(s, ...rest) {
+    if (!DIAGNOSE) return
+    console.log(s, ...rest)
   }
 
   set onselected(value) {
@@ -89,27 +93,26 @@ function handleVscodeMessage(msg) {
       app.addMetrics(msg.id, msg.metrics)
       break
     }
+    case 'remove-agent': {
+      app.removeAgent(msg.id)
+      break
+    }
   }
 }
-
-const DIAGNOSE = true
 
 function connectVscode() {
   /* global acquireVsCodeApi */
   // @ts-ignore
   const vscode = acquireVsCodeApi()
 
-  const p = document.getElementById('text')
   function logMessage(msg) {
-    p.innerHTML = JSON.stringify(
-      Object.assign({}, { timestamp: Date.now() }, msg.data)
-    )
+    const { data } = msg
+    app.log(`${data.command} for ${data.id}`)
   }
 
   app.onselected = id => vscode.postMessage({ event: 'agent-selected', id })
   window.addEventListener('message', msg => {
-    if (DIAGNOSE) logMessage(msg)
-
+    logMessage(msg)
     handleVscodeMessage(msg.data)
   })
 

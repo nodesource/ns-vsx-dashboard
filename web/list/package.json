@@ -24,7 +24,6 @@
     "webpack-dev-server": "^2.9.1"
   },
   "dependencies": {
-    "pretty-bytes": "~5.1.0",
     "time-ago": "~0.2.1"
   }
 }
