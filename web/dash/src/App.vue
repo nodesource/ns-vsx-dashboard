@@ -1,10 +1,15 @@
 <template>
   <v-app dark>
-    <v-content>
-      <v-container>
-        <reactive-chart :chart="memoryChart"></reactive-chart>
-      </v-container>
-    </v-content>
+    <v-expansion-panel
+      v-bind:style="{ width: chartWidth + 'px' }"
+      v-for="graph in graphs"
+      :key="graph.chart.uuid"
+      >
+      <v-expansion-panel-content>
+        <div slot="header" v-html="graph.header" />
+        <reactive-chart :chart="graph.chart"></reactive-chart>
+      </v-expansion-panel-content>
+    </v-expansion-panel>
   </v-app>
 </template>
 
