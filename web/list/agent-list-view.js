@@ -3,7 +3,7 @@
 const webviewHtml = require('../../lib/webview-html')
 
 const ta = require('time-ago')
-const prettyBytes = require('pretty-bytes')
+const prettyBytes = require('@thlorenz/pretty-bytes')
 
 const { logDebug } = require('../../lib/logger')('list-view')
 const { window, ViewColumn } = require('vscode')

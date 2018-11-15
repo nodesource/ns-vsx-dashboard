@@ -2,10 +2,6 @@
 
 const DIAGNOSE = true
 
-function connectVscode() {
-  // TODO
-}
-
 import {
     CHART_WIDTH
   , CHART_HEIGHT
@@ -96,7 +92,11 @@ class App {
     return this._data
   }
 
-  addMetrics(id, metrics) {
+  set agentId(value) {
+    this._agentId = value
+  }
+
+  addMetrics(metrics) {
     const time = Date.now()
     updateMemoryUsage(this._memoryChart, time, metrics)
     updateCPU(this._cpuChart, time, metrics)
@@ -116,9 +116,51 @@ class App {
     updateContextSwitch(this._contextSwitchChart, time, metrics)
   }
 
-  addInfo(id, info) {
+  addInfo(info) {
     // TODO
   }
+
+  removeAgent() {
+
+  }
+}
+
+//
+// Initialization
+//
+function handleVscodeMessage(msg) {
+  const { command } = msg
+  switch (command) {
+    case 'add-info': {
+      app.addInfo(msg.info)
+      break
+    }
+    case 'add-metrics': {
+      app.addMetrics(msg.metrics)
+      break
+    }
+    case 'remove-agent': {
+      app.removeAgent()
+      break
+    }
+  }
+}
+function connectVscode() {
+  /* global acquireVsCodeApi */
+  // @ts-ignore
+  const vscode = acquireVsCodeApi()
+
+  function logMessage(msg) {
+    const { data } = msg
+    app.log(`${data.command} for ${data.id}`)
+  }
+
+  window.addEventListener('message', msg => {
+    logMessage(msg)
+    handleVscodeMessage(msg.data)
+  })
+
+  vscode.postMessage({ event: 'ready' })
 }
 
 //
@@ -145,15 +187,15 @@ function runInBrowserTests() {
   // @ts-ignore
   const agents = new Map(agentsJSON)
   function init() {
-    for (const [ id, agent ] of agents) {
-      app.addInfo(id, agent.info)
+    for (const agent of agents.values()) {
+      app.addInfo(agent.info)
     }
   }
 
   function simulateMetrics() {
-    for (const [ id, agent ] of agents) {
+    for (const agent of agents.values()) {
       if (agent.collectedMetrics == null || agent.collectedMetrics.length === 0) continue
-      app.addMetrics(id, agent.collectedMetrics.shift())
+      app.addMetrics(agent.collectedMetrics.shift())
     }
   }
 
