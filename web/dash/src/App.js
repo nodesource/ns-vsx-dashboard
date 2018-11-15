@@ -152,12 +152,12 @@ function runInBrowserTests() {
 
   function simulateMetrics() {
     for (const [ id, agent ] of agents) {
-      if (agent.collectedMetrics == null) continue
+      if (agent.collectedMetrics == null || agent.collectedMetrics.length === 0) continue
       app.addMetrics(id, agent.collectedMetrics.shift())
     }
   }
 
   init()
   simulateMetrics()
-  setInterval(simulateMetrics, 500)
+  setInterval(simulateMetrics, 3000)
 }

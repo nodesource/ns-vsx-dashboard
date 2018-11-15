@@ -6,7 +6,12 @@
       :key="graph.chart.uuid"
       >
       <v-expansion-panel-content>
-        <div slot="header" v-html="graph.header" />
+        <div d-flex slot="header" width="100%">
+            <p>{{ graph.header }}</p>
+            <p class="text-xs-right blue--text" style="margin: -40px 5px 0 0;">
+              {{ graph.chart.summary }}
+            </p>
+        </div>
         <reactive-chart :chart="graph.chart"></reactive-chart>
       </v-expansion-panel-content>
     </v-expansion-panel>
