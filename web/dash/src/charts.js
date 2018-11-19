@@ -42,6 +42,7 @@ function createChart(uuid, traceNames, summarizers, ytitle) {
     , traces
     , layout: layout({ xtitle: 'time', ytitle })
     , meta: { summarizers }
+    , summary: ''
   }
 }
 
@@ -63,7 +64,11 @@ function addDataPoints(chart, time, dataPoints) {
     const y = dataPoints[i]
     chart.traces[i].y.push(y)
   }
-  chart.summary = summarize(chart.traces, chart.meta.summarizers)
+  try {
+    chart.summary = summarize(chart.traces, chart.meta.summarizers)
+  } catch (e) {
+    chart.summary = 'n/a'
+  }
 }
 
 //

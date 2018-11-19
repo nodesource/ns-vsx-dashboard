@@ -7,10 +7,10 @@
       >
       <v-expansion-panel-content>
         <div d-flex slot="header" width="100%">
-            <p>{{ graph.header }}</p>
-            <p class="text-xs-right blue--text" style="margin: -40px 5px 0 0;">
-              {{ graph.chart.summary }}
-            </p>
+          <p>{{ graph.header }}</p>
+          <p class="text-xs-right blue--text" style="margin: -40px 5px 0 0;">
+            {{ graph.chart.summary }}
+          </p>
         </div>
         <reactive-chart :chart="graph.chart"></reactive-chart>
       </v-expansion-panel-content>

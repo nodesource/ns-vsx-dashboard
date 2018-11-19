@@ -1,6 +1,6 @@
 'use strict'
 
-const prettyBytes = require('pretty-bytes')
+const prettyBytes = require('@thlorenz/pretty-bytes')
 
 const id = x => x
 const percent = x => x.toFixed(1) + '%'
