@@ -2,6 +2,7 @@
 
 const webviewHtml = require('../../lib/webview-html')
 
+const processAgentInfo = require('../lib/process-agent-info')
 const { logDebug } = require('../../lib/logger')('dash-view')
 const { window, ViewColumn } = require('vscode')
 
@@ -32,7 +33,7 @@ class AgentDashView {
     if (this._panelDisposed) {
       this._panel = window.createWebviewPanel(
           `n|s dashboard:agent ${this._agentId}`
-        , `N|S Dashboard Agent [${this._agentId.slice(0, 5)}..]`
+        , `N|S Agent [${this._agentId.slice(0, 8)}..]`
         , ViewColumn.Active
         , { enableScripts: true }
       )
@@ -66,12 +67,19 @@ class AgentDashView {
   }
 
   _initAgent() {
+    this._addInfo(this._agentManager.agentInfo(this._agentId))
     this._addMetrics(this._agentManager.agentMetrics(this._agentId))
   }
 
   _addMetrics(metrics) {
     if (metrics == null) return
     this._postMessage({ command: 'add-metrics', metrics })
+  }
+
+  _addInfo(info) {
+    if (info == null) return
+    const processed = processAgentInfo(this._agentId, info)
+    this._postMessage({ command: 'add-info', info: processed })
   }
 
   _removeAgent(id) {

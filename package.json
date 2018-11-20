@@ -28,6 +28,7 @@
     "vscode": "^1.1.21"
   },
   "dependencies": {
-    "@thlorenz/pretty-bytes": "~5.1.1"
+    "@thlorenz/pretty-bytes": "~5.1.1",
+    "time-ago": "~0.2.1"
   }
 }

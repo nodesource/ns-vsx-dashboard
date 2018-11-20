@@ -80,6 +80,8 @@ class App {
         , { header: 'Page Faults', chart: this._pageFaultChart }
         , { header: 'Context Switches', chart: this._contextSwitchChart }
         , { header: 'Process Messages', chart: this._ipcChart } ]
+      , alive: true
+      , info: {}
     }
   }
 
@@ -114,14 +116,16 @@ class App {
     updatePageFault(this._pageFaultChart, time, metrics)
     updateIPC(this._ipcChart, time, metrics)
     updateContextSwitch(this._contextSwitchChart, time, metrics)
+    this._data.alive = true
   }
 
   addInfo(info) {
-    // TODO
+    this._data.alive = true
+    this._data.info = Object.assign(this._data.info, info)
   }
 
   removeAgent() {
-
+    this._data.alive = false
   }
 }
 
@@ -145,6 +149,7 @@ function handleVscodeMessage(msg) {
     }
   }
 }
+
 function connectVscode() {
   /* global acquireVsCodeApi */
   // @ts-ignore
