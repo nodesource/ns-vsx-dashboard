@@ -15,6 +15,8 @@ class AgentDashView {
     this._panel = null
     this._panelDisposed = true
     this._app = null
+    this._active = false
+    this._subscribeEvents()
   }
 
   _bind() {
@@ -22,11 +24,22 @@ class AgentDashView {
     this._onpanelDisposed = this._onpanelDisposed.bind(this)
   }
 
+  _subscribeEvents() {
+    this._agentManager
+      .on('agent-manager:agent-metrics-added', ({ id, metrics }) => {
+        this._onagentMetricsAdded(id, metrics)
+      })
+      .on('agent-manager:agent-died', ({ id, info }) => {
+        this._onagentDied(id)
+      })
+  }
+
   showAgent(id) {
     this._agentId = id
     if (this._panelDisposed || this._panel == null || !this._panel.visible) {
       this.toggle()
     }
+    this._activate()
   }
 
   toggle() {
@@ -52,23 +65,18 @@ class AgentDashView {
   _activate() {
     logDebug('Activating agent-dash view')
     this._initAgent()
-    this._agentManager
-      .removeAllListeners()
-      .on('agent-manager:agent-metrics-added', ({ id, metrics }) => {
-        this._onagentMetricsAdded(id, metrics)
-      })
-      .on('agent-manager:agent-died', ({ id, info }) => {
-        this._onagentDied(id)
-      })
+    this._active = true
   }
 
   _deactivate() {
     logDebug('Deactivating agent-dash view')
-    this._agentManager.removeAllListeners()
+    this._active = false
   }
 
   _initAgent() {
     this._addInfo(this._agentManager.agentInfo(this._agentId))
+    // TODO: replay metrics to preserve history
+    // use timestamped agent.collectedMetrics and init chart accordingly
     this._addMetrics(this._agentManager.agentMetrics(this._agentId))
   }
 
@@ -115,11 +123,13 @@ class AgentDashView {
   }
 
   _onagentMetricsAdded(id, metrics) {
-    if (id === this._agentId) this._addMetrics(metrics)
+    if (!this._active || id !== this._agentId) return
+    this._addMetrics(metrics)
   }
 
   _onagentDied(id, info) {
-    if (id === this._agentId) this._removeAgent()
+    if (!this._active || id !== this._agentId) return
+    this._removeAgent()
   }
 }
 

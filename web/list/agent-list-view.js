@@ -35,11 +35,26 @@ class AgentListView extends EventEmitter {
     this._panelDisposed = true
     this._app = null
     this._addedInfos = new Map()
+    this._active = false
+    this._subscribeEvents()
   }
 
   _bind() {
     this._onwebviewMessage = this._onwebviewMessage.bind(this)
     this._onpanelDisposed = this._onpanelDisposed.bind(this)
+  }
+
+  _subscribeEvents() {
+    this._agentManager
+      .on('agent-manager:agent-info-updated', ({ id, info }) => {
+        this._onagentInfoUpdated(id, info)
+      })
+      .on('agent-manager:agent-metrics-added', ({ id, metrics }) => {
+        this._onagentMetricsAdded(id, metrics)
+      })
+      .on('agent-manager:agent-died', ({ id, info }) => {
+        this._onagentDied(id, info)
+      })
   }
 
   toggle() {
@@ -67,21 +82,12 @@ class AgentListView extends EventEmitter {
   _activate() {
     logDebug('Activating agent-list view')
     this._initCurrentAgents()
-    this._agentManager
-      .on('agent-manager:agent-info-updated', ({ id, info }) => {
-        this._onagentInfoUpdated(id, info)
-      })
-      .on('agent-manager:agent-metrics-added', ({ id, metrics }) => {
-        this._onagentMetricsAdded(id, metrics)
-      })
-      .on('agent-manager:agent-died', ({ id, info }) => {
-        this._onagentDied(id, info)
-      })
+    this._active = true
   }
 
   _deactivate() {
     logDebug('Deactivating agent-list view')
-    this._agentManager.removeAllListeners()
+    this._active = false
   }
 
   _initCurrentAgents() {
@@ -161,15 +167,15 @@ class AgentListView extends EventEmitter {
   }
 
   _onagentInfoUpdated(id, info) {
-    this._addInfo(id, info)
+    if (this._active) this._addInfo(id, info)
   }
 
   _onagentMetricsAdded(id, metrics) {
-    this._addMetrics(id, metrics)
+    if (this._active) this._addMetrics(id, metrics)
   }
 
   _onagentDied(id, info) {
-    this._removeAgent(id)
+    if (this._active) this._removeAgent(id)
   }
 }
 
