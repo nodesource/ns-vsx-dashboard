@@ -3,13 +3,13 @@
     <v-card
       v-bind:style="{ width: chartWidth + 'px', position: 'fixed', zIndex: 5 }">
       <v-title primary-title>
-        <div>
-          🕵 {{ info.name }} ({{ info.id }})
+        <div class='ml-2 mr-2 mt-1'>
+          {{ alive ? '🕵' : '💀' }} {{ info.name }} ({{ info.id }})
         </div>
-        <div v-html="info.main" />
+        <div class='ml-2 mr-2 mb-1' v-html="info.main" />
       </v-title>
     </v-card>
-    <div class="mt-4">
+    <div class="mt-5">
       <v-expansion-panel
         v-bind:style="{ width: chartWidth + 'px' }"
         v-for="graph in graphs"

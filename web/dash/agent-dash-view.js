@@ -53,6 +53,7 @@ class AgentDashView {
     logDebug('Activating agent-dash view')
     this._initAgent()
     this._agentManager
+      .removeAllListeners()
       .on('agent-manager:agent-metrics-added', ({ id, metrics }) => {
         this._onagentMetricsAdded(id, metrics)
       })

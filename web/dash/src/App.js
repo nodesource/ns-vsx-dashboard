@@ -80,7 +80,7 @@ class App {
         , { header: 'Page Faults', chart: this._pageFaultChart }
         , { header: 'Context Switches', chart: this._contextSwitchChart }
         , { header: 'Process Messages', chart: this._ipcChart } ]
-      , alive: true
+      , alive: false
       , info: {}
     }
   }
