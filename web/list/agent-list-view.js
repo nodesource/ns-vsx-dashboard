@@ -155,6 +155,16 @@ class AgentListView extends EventEmitter {
         logDebug({ infoRequested: msg.id })
         break
       }
+      case 'cpu-profile-requested': {
+        logDebug({ requestedCpuProfile: msg.id })
+        this.emit('agent-list:cpu-profile-requested', msg.id)
+        break
+      }
+      case 'heap-profile-requested': {
+        logDebug({ requestedHeapProfile: msg.id })
+        this.emit('agent-list:heap-profile-requested', msg.id)
+        break
+      }
       case 'ready': {
         this._activate()
         break

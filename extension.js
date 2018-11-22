@@ -4,6 +4,7 @@ const { commands } = require('vscode')
 
 const AgentConnector = require('./lib/agent-connector')
 const AgentManager = require('./lib/agent-manager')
+const Profiler = require('./lib/profiler')
 const AgentListView = require('./web/list/agent-list-view')
 const AgentDashView = require('./web/dash/agent-dash-view')
 const { initDevelopment } = require('./lib/development')
@@ -15,6 +16,7 @@ const { logInfo } = require('./lib/logger')('main')
 function activate(context) {
   const connector = new AgentConnector()
   const agentManager = new AgentManager(connector)
+  const profiler = new Profiler(agentManager)
 
   initAgentStatusbar(agentManager)
   initAgentErrors({ agentManager })
@@ -23,6 +25,8 @@ function activate(context) {
   const agentDashView = new AgentDashView(agentManager)
   const agentListView = new AgentListView(agentManager)
     .on('agent-list:agent-selected', id => agentDashView.showAgent(id))
+    .on('agent-list:cpu-profile-requested', id => profiler.requestCpuProfile(id))
+    .on('agent-list:heap-profile-requested', id => profiler.requestHeapProfile(id))
 
   const showSummaryCommand =
     commands.registerCommand(

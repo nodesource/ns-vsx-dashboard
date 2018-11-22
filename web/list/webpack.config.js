@@ -62,7 +62,13 @@ if (process.env.NODE_ENV === 'production') {
       'process.env': {
         NODE_ENV: '"production"'
       }
-    }),
+    })
+  ])
+}
+
+if (process.env.OPTS === 'minify') {
+  console.log('MINIFIYING, get a Coffee!')
+  module.exports.plugins = (module.exports.plugins || []).concat([
     new webpack.optimize.UglifyJsPlugin({
       sourceMap: true,
       compress: {

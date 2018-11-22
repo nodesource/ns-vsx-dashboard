@@ -141,8 +141,8 @@ function connectVscode() {
   }
 
   app.onselected = id => postMessage({ event: 'agent-selected', id })
-  app.oncpuProfileRequested = id => id => postMessage({ event: 'agent-cpu-profile-requested', id })
-  app.onheapProfileRequested = id => id => postMessage({ event: 'agent-heap-profile-requested', id })
+  app.oncpuProfileRequested = id => postMessage({ event: 'cpu-profile-requested', id })
+  app.onheapProfileRequested = id => postMessage({ event: 'heap-profile-requested', id })
 
   window.addEventListener('message', msg => {
     logMessage(msg)
