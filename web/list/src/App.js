@@ -1,4 +1,3 @@
-import { format } from 'util'
 const DIAGNOSE = true
 
 class App {
@@ -7,6 +6,8 @@ class App {
     // that should be visisble in the UI
     this._data = { agentsMap: new Map(), agents: [] }
     this._onselected = null
+    this._onheapProfileRequested = null
+    this._oncpuProfileRequested = null
   }
 
   addInfo(id, info) {
@@ -43,11 +44,37 @@ class App {
     this._onselected = value
   }
 
+  set onheapProfileRequested(value) {
+    this._onheapProfileRequested = value
+  }
+
+  set oncpuProfileRequested(value) {
+    this._oncpuProfileRequested = value
+  }
+
   onclick(id) {
     if (typeof this._onselected === 'function') {
       this._onselected(id)
     } else {
       console.log('No agent list selected handler registered')
+    }
+  }
+
+  onheapClick(e, id) {
+    e.stopPropagation()
+    if (typeof this._onheapProfileRequested === 'function') {
+      this._onheapProfileRequested(id)
+    } else {
+      console.log('No agent list heap profile requested handler registered')
+    }
+  }
+
+  oncpuClick(e, id) {
+    e.stopPropagation()
+    if (typeof this._oncpuProfileRequested === 'function') {
+      this._oncpuProfileRequested(id)
+    } else {
+      console.log('No agent list cpu profile requested handler registered')
     }
   }
 
@@ -74,8 +101,10 @@ class App {
 //
 export const app = new App()
 export const methods = {
-    log: app.log.bind(app)
-  , onclick: app.onclick.bind(app)
+    log         : app.log.bind(app)
+  , onclick     : app.onclick.bind(app)
+  , onheapClick : app.onheapClick.bind(app)
+  , oncpuClick  : app.oncpuClick.bind(app)
 }
 export const data = app.data.bind(app)
 
@@ -104,13 +133,17 @@ function connectVscode() {
   /* global acquireVsCodeApi */
   // @ts-ignore
   const vscode = acquireVsCodeApi()
+  const { postMessage } = vscode
 
   function logMessage(msg) {
     const { data } = msg
     app.log(`${data.command} for ${data.id}`)
   }
 
-  app.onselected = id => vscode.postMessage({ event: 'agent-selected', id })
+  app.onselected = id => postMessage({ event: 'agent-selected', id })
+  app.oncpuProfileRequested = id => id => postMessage({ event: 'agent-cpu-profile-requested', id })
+  app.onheapProfileRequested = id => id => postMessage({ event: 'agent-heap-profile-requested', id })
+
   window.addEventListener('message', msg => {
     logMessage(msg)
     handleVscodeMessage(msg.data)
@@ -130,25 +163,37 @@ if (runningInVscode) {
 //
 // Tests
 //
-import agentsJSON from '../agents.json'
 function runInBrowserTests() {
   // @ts-ignore
-  const agents = new Map(agentsJSON)
+  const agents = new Map([
+    [ 'agent-uno-id', {
+      info: {
+          id: 'agent-uno-id'
+        , name: 'agent-uno'
+        , processStart: 'yesterday'
+        , main: `../some/path/to/test-agent.js`
+      }
+    }]
+  ])
+
   function init() {
-    app.onselected = id => console.log('selected', id)
     for (const [ id, agent ] of agents) {
       app.addInfo(id, agent.info)
     }
   }
 
   function simulateMetrics() {
-    for (const [ id, agent ] of agents) {
-      if (agent.collectedMetrics == null) continue
-      app.addMetrics(id, agent.collectedMetrics.shift())
+    const metrics = {
+        heapUsed: 1E2
+      , cpu: 22
+      , activeRequests: 2
+      , activeHandles: 9
+    }
+    for (const id of agents.keys()) {
+      app.addMetrics(id, metrics)
     }
   }
 
   init()
   simulateMetrics()
-  setInterval(simulateMetrics, 500)
 }
