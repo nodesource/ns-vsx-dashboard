@@ -22,7 +22,7 @@ function createWebview(appName) {
   const html = indexHtmlLines.slice(0, -4)
     .concat('<script>')
       .concat(mainJsLines)
-    .concat('</script')
+    .concat('</script>')
     .concat([ '</body>', '</html>' ])
     .join('\n')
 

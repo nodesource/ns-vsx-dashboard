@@ -1,0 +1,27 @@
+{
+  "name": "ns-vsx-dashboard.agent-cpu-profile-webview",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --open --inline --hot",
+    "build": "cross-env NODE_ENV=production OPTS=minify webpack --progress --hide-modules",
+    "build:nomini": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "webview": "npm run build && ../../scripts/create-webview cpu-profile",
+    "webview:dev": "npm run build:nomini && ../../scripts/create-webview cpu-profile"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-stage-2": "^6.24.1",
+    "cross-env": "^5.0.5",
+    "css-loader": "^0.28.7",
+    "file-loader": "^1.1.4",
+    "flamegraph": "~1.1.0",
+    "handlebars": "~4.0.12",
+    "handlebars-loader": "~1.7.0",
+    "style-loader": "^0.13.1",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.1",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.9.1"
+  }
+}
