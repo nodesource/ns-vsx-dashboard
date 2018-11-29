@@ -1,11 +1,11 @@
-'use strict'
+import { window } from 'vscode'
+import { EventEmitter } from 'events'
+import AgentManager from './agent-manager'
 
-const { window } = require('vscode')
-const { EventEmitter } = require('events')
-// const { logDebug, logTrace } = require('./logger')('agent-manager')
+export default class Profiler extends EventEmitter {
+  _agentManager: AgentManager;
 
-class Profiler extends EventEmitter {
-  constructor(agentManager) {
+  constructor(agentManager: AgentManager) {
     super()
     this._agentManager = agentManager
     this._bind()
@@ -23,24 +23,22 @@ class Profiler extends EventEmitter {
       .on('agent-manager:agent-heap-profile-added', this._onheapProfileAdded)
   }
 
-  requestCpuProfile(id) {
+  requestCpuProfile(id: string) {
     window.showInformationMessage('Requesting CPU profile')
     this._agentManager.requestAgentCpuProfile(id)
   }
 
-  requestHeapProfile(id) {
+  requestHeapProfile(id: string) {
     window.showInformationMessage('Requesting Heap profile')
     this._agentManager.requestAgentHeapProfile(id)
   }
 
-  _oncpuProfileAdded({ id, profile }) {
+  _oncpuProfileAdded() {
     window.showInformationMessage('Received CPU profile')
   }
 
-  _onheapProfileAdded({ id, profile }) {
+  _onheapProfileAdded() {
     // TODO: heap profiling not working ATM (profile comes back empty)
     window.showInformationMessage('Received Heap profile')
   }
 }
-
-module.exports = Profiler

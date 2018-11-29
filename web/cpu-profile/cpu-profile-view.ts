@@ -1,22 +1,52 @@
-'use strict'
+import {
+  ICPUProfile,
+  IProcessedCPUProfile,
+  processCpuProfile
+} from 'flamegraph'
 
-const flamegraph = require('flamegraph')
-const { window, ViewColumn } = require('vscode')
-const { EventEmitter } = require('events')
-const { logDebug } = require('../../lib/logger')('list-view')
-const webviewHtml = require('../../lib/webview-html')
+import { window, ViewColumn, WebviewPanel } from 'vscode'
+import { EventEmitter } from 'events'
+import webviewHtml from '../../src/webview-html'
+import AgentManager from '../../src/agent-manager'
+import logger from '../../src/logger'
+import { unhandledCase } from '../../src/core';
 
+const { logDebug } = logger('list-view')
 const fnRx = /^([^/]*)([^:]+):(\d*)/
 
-class CpuProfileView extends EventEmitter {
-  constructor(agentManager) {
+interface IResponseMessage {
+  event: 'log' | 'frame-selected' | 'ready'
+  text?: string
+  fn?: string
+}
+
+interface IPostMessage {
+  command: 'add-profile',
+  profile: IProcessedCPUProfile
+}
+
+export interface IFrameInfo {
+  canShow: boolean
+  fn: string
+  fileName: string
+  line: number
+}
+
+export type CpuProfileViewEvent = 'cpu-profile:frame-selected'
+export default class CpuProfileView extends EventEmitter {
+  _agentManager: AgentManager
+  _html: string
+  _panelDisposed: boolean = true
+  _active: boolean = false
+  _panel!: WebviewPanel
+
+  _pendingProfile?: IProcessedCPUProfile | null
+  _renderedProfile?: IProcessedCPUProfile | null
+
+  constructor(agentManager: AgentManager) {
     super()
     this._agentManager = agentManager
     this._html = this._webviewHtml()
-    this._panel = null
-    this._panelDisposed = true
-    this._pendingProfile = null
-    this._renderedProfile = null
     this._bind()
     this._subscribeEvents()
   }
@@ -33,16 +63,16 @@ class CpuProfileView extends EventEmitter {
       })
   }
 
-  _onagentCpuProfileAdded(id, profile) {
+  _onagentCpuProfileAdded(_: string, profile: ICPUProfile) {
     this._toggle()
     this._renderedProfile = null
-    this._pendingProfile = flamegraph.processCpuProfile(profile)
+    this._pendingProfile = processCpuProfile(profile)
   }
 
   _toggle(forceShow = true) {
     if (this._panelDisposed) {
       this._panel = window.createWebviewPanel(
-          'n|s dashboard:cpu-profile'
+        'n|s dashboard:cpu-profile'
         , 'N|S Dashboard CPU Profile'
         , ViewColumn.Active
         , { enableScripts: true }
@@ -59,7 +89,7 @@ class CpuProfileView extends EventEmitter {
     }
   }
 
-  _onwebviewMessage(msg) {
+  _onwebviewMessage(msg: IResponseMessage) {
     const { event } = msg
     switch (event) {
       case 'log': {
@@ -68,7 +98,7 @@ class CpuProfileView extends EventEmitter {
       }
       case 'frame-selected': {
         logDebug({ fn: msg.fn })
-        const frameInfo = this._processFn(msg.fn)
+        const frameInfo = this._processFn(msg.fn!)
         this.emit('cpu-profile:frame-selected', frameInfo)
         break
       }
@@ -76,10 +106,11 @@ class CpuProfileView extends EventEmitter {
         this._activate()
         break
       }
+      default: unhandledCase(event)
     }
   }
 
-  _onpanelDisposed(_onpanelDisposed) {
+  _onpanelDisposed() {
     this._panelDisposed = true
   }
 
@@ -98,7 +129,7 @@ class CpuProfileView extends EventEmitter {
     this._active = false
   }
 
-  _postMessage(msg) {
+  _postMessage(msg: IPostMessage) {
     if (this._panelDisposed) return
     this._panel.webview.postMessage(msg)
   }
@@ -107,12 +138,10 @@ class CpuProfileView extends EventEmitter {
     return webviewHtml('cpu-profile')
   }
 
-  _processFn(fn) {
+  _processFn(fn: string) {
     const m = fn.match(fnRx)
     if (m == null) return { canShow: false }
-    const [ , fnName, fileName, line ] = m
+    const [, fnName, fileName, line] = m
     return { canShow: true, fn: fnName, fileName, line }
   }
 }
-
-module.exports = CpuProfileView

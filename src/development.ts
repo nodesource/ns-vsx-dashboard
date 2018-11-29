@@ -1,14 +1,17 @@
-'use strict'
+import { join } from 'path'
+import { writeFileSync } from 'fs'
+import AgentManager from './agent-manager'
 
-const { join } = require('path')
-const { writeFileSync } = require('fs')
+type Options = { agentManager: AgentManager }
 
 const agentJSONFile = join(
   __dirname, '..', 'web', 'list', 'agents.json'
 )
 
-class Development {
-  constructor({ agentManager }) {
+export class Development {
+  _agentManager: AgentManager;
+
+  constructor({ agentManager } : Options) {
     this._agentManager = agentManager
     this._agentManager
       .on('agent-manager:agent-added', ()  => this._onagentAdded())
@@ -29,11 +32,6 @@ class Development {
   }
 }
 
-function initDevelopment(opts) {
+export function initDevelopment(opts: Options) {
   return new Development(opts)
-}
-
-module.exports = {
-    initDevelopment
-  , Development
 }

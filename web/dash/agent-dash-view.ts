@@ -1,21 +1,39 @@
-'use strict'
+import webviewHtml from '../../src/webview-html'
 
-const webviewHtml = require('../../lib/webview-html')
+import processAgentInfo, { IProcessedAgentInfo } from '../lib/process-agent-info'
+import logger from '../../src/logger'
+import { window, ViewColumn, WebviewPanel } from 'vscode'
+import AgentManager from '../../src/agent-manager'
+import { unhandledCase } from '../../src/core'
+import { IToolkitAgentMetric, IToolkitAgentInfo } from 'toolkit-zmq'
 
-const processAgentInfo = require('../lib/process-agent-info')
-const { logDebug } = require('../../lib/logger')('dash-view')
-const { window, ViewColumn } = require('vscode')
+const { logDebug } = logger('list-view')
 
-class AgentDashView {
-  constructor(agentManager) {
+interface IResponseMessage {
+  event: 'log' | 'ready'
+  id: string
+  text?: string
+}
+
+interface IPostMessage {
+  command: 'add-info' | 'add-metrics' | 'remove-agent'
+  id: string
+  info?: IProcessedAgentInfo
+  metrics?: IToolkitAgentMetric
+}
+
+export default class AgentDashView {
+  private _agentManager: AgentManager
+  private _html: string
+  private _panelDisposed: boolean = true
+  private _active: boolean = false
+  private _panel!: WebviewPanel
+  private _agentId!: string
+
+  constructor(agentManager: AgentManager) {
     this._bind()
     this._agentManager = agentManager
     this._html = this._webviewHtml()
-    this._agentId = null
-    this._panel = null
-    this._panelDisposed = true
-    this._app = null
-    this._active = false
     this._subscribeEvents()
   }
 
@@ -29,12 +47,12 @@ class AgentDashView {
       .on('agent-manager:agent-metrics-added', ({ id, metrics }) => {
         this._onagentMetricsAdded(id, metrics)
       })
-      .on('agent-manager:agent-died', ({ id, info }) => {
+      .on('agent-manager:agent-died', ({ id }) => {
         this._onagentDied(id)
       })
   }
 
-  showAgent(id) {
+  showAgent(id: string) {
     this._agentId = id
     if (this._panelDisposed || this._panel == null || !this._panel.visible) {
       this.toggle()
@@ -80,22 +98,22 @@ class AgentDashView {
     this._addMetrics(this._agentManager.agentMetrics(this._agentId))
   }
 
-  _addMetrics(metrics) {
+  _addMetrics(metrics: IToolkitAgentMetric | null) {
     if (metrics == null) return
-    this._postMessage({ command: 'add-metrics', metrics })
+    this._postMessage({ command: 'add-metrics', id: this._agentId, metrics })
   }
 
-  _addInfo(info) {
+  _addInfo(info: IToolkitAgentInfo) {
     if (info == null) return
     const processed = processAgentInfo(this._agentId, info)
-    this._postMessage({ command: 'add-info', info: processed })
+    this._postMessage({ command: 'add-info', id: this._agentId, info: processed })
   }
 
-  _removeAgent(id) {
+  _removeAgent(id: string) {
     this._postMessage({ command: 'remove-agent', id })
   }
 
-  _postMessage(msg) {
+  _postMessage(msg: IPostMessage) {
     if (this._panelDisposed) return
     this._panel.webview.postMessage(msg)
   }
@@ -104,7 +122,7 @@ class AgentDashView {
     return webviewHtml('dash')
   }
 
-  _onwebviewMessage(msg) {
+  _onwebviewMessage(msg: IResponseMessage) {
     const { event } = msg
     switch (event) {
       case 'log': {
@@ -115,22 +133,21 @@ class AgentDashView {
         this._activate()
         break
       }
+      default: unhandledCase(event)
     }
   }
 
-  _onpanelDisposed(_onpanelDisposed) {
+  _onpanelDisposed() {
     this._panelDisposed = true
   }
 
-  _onagentMetricsAdded(id, metrics) {
+  _onagentMetricsAdded(id: string, metrics: IToolkitAgentMetric) {
     if (!this._active || id !== this._agentId) return
     this._addMetrics(metrics)
   }
 
-  _onagentDied(id, info) {
+  _onagentDied(id: string) {
     if (!this._active || id !== this._agentId) return
-    this._removeAgent()
+    this._removeAgent(id)
   }
 }
-
-module.exports = AgentDashView

@@ -1,39 +1,73 @@
-'use strict'
+import { IToolkitAgentMetric, IToolkitAgentInfo } from 'toolkit-zmq'
+import webviewHtml from '../../src/webview-html'
 
-const webviewHtml = require('../../lib/webview-html')
+import prettyBytes from '@thlorenz/pretty-bytes'
+import processAgentInfo, { IProcessedAgentInfo } from '../lib/process-agent-info'
 
-const prettyBytes = require('@thlorenz/pretty-bytes')
-const processAgentInfo = require('../lib/process-agent-info')
+import logger from '../../src/logger'
+import { window, ViewColumn, WebviewPanel } from 'vscode'
+import { EventEmitter } from 'events'
+import AgentManager from '../../src/agent-manager'
+import { unhandledCase } from '../../src/core'
 
-const { logDebug } = require('../../lib/logger')('list-view')
-const { window, ViewColumn } = require('vscode')
-const { EventEmitter } = require('events')
+const { logDebug } = logger('list-view')
 
-function processAgentMetrics(metrics) {
+interface IPostMessage {
+  command: 'add-info' | 'add-metrics' | 'remove-agent'
+  id: string
+  info?: IProcessedAgentInfo
+  metrics?: IProcessedAgentMetric
+}
+
+interface IResponseMessage {
+  event:
+  | 'log'
+  | 'agent-selected'
+  | 'info-requested'
+  | 'cpu-profile-requested'
+  | 'ready'
+  | 'heap-profile-requested'
+  id: string
+  text?: string
+}
+
+interface IProcessedAgentMetric {
+  heapUsed: string
+  activeRequests: number
+  activeHandles: number
+  cpu: number
+}
+
+function processAgentMetrics(metrics: IToolkitAgentMetric): IProcessedAgentMetric {
   const {
-      heapUsed
-    , activeRequests
-    , activeHandles
-    , cpu
+    heapUsed,
+    activeRequests,
+    activeHandles,
+    cpu
   } = metrics
 
   return {
-      heapUsed: prettyBytes(heapUsed)
-    , activeRequests
-    , activeHandles
-    , cpu: Math.round(cpu)
+    heapUsed: prettyBytes(heapUsed),
+    activeRequests,
+    activeHandles,
+    cpu: Math.round(cpu)
   }
 }
 
-class AgentListView extends EventEmitter {
-  constructor(agentManager) {
+export default class AgentListView extends EventEmitter {
+  private _agentManager: AgentManager
+  private _html: string
+  private _panelDisposed: boolean = true
+  private _active: boolean = false
+  private _panel!: WebviewPanel
+  private _addedInfos: Map<string, IToolkitAgentInfo>
+
+  constructor(agentManager: AgentManager) {
     super()
     this._bind()
     this._agentManager = agentManager
     this._html = this._webviewHtml()
-    this._panel = null
     this._panelDisposed = true
-    this._app = null
     this._addedInfos = new Map()
     this._active = false
     this._subscribeEvents()
@@ -52,15 +86,15 @@ class AgentListView extends EventEmitter {
       .on('agent-manager:agent-metrics-added', ({ id, metrics }) => {
         this._onagentMetricsAdded(id, metrics)
       })
-      .on('agent-manager:agent-died', ({ id, info }) => {
-        this._onagentDied(id, info)
+      .on('agent-manager:agent-died', ({ id }) => {
+        this._onagentDied(id)
       })
   }
 
   toggle() {
     if (this._panelDisposed) {
       this._panel = window.createWebviewPanel(
-          'n|s dashboard:agents'
+        'n|s dashboard:agents'
         , 'N|S Dashboard Agents'
         , ViewColumn.Active
         , { enableScripts: true }
@@ -91,15 +125,15 @@ class AgentListView extends EventEmitter {
   }
 
   _initCurrentAgents() {
-    for (const [ id, agent ] of this._agentManager.agents) {
+    for (const [id, agent] of this._agentManager.agents) {
       this._addInfo(id, agent.info)
     }
-    for (const [ id, agent ] of this._agentManager.agents) {
+    for (const [id, agent] of this._agentManager.agents) {
       this._addMetrics(id, agent.lastMetrics)
     }
   }
 
-  _addInfo(id, info) {
+  _addInfo(id: string, info: IToolkitAgentInfo) {
     if (info == null) return
     // processing info and metrics to result here instead of in the webview
     // to send only the data that's consumed
@@ -108,29 +142,29 @@ class AgentListView extends EventEmitter {
     this._addedInfos.set(id, info)
   }
 
-  _addMetrics(id, metrics) {
+  _addMetrics(id: string, metrics: IToolkitAgentMetric) {
     if (metrics == null) return
     const processedMetrics = processAgentMetrics(metrics)
     this._postMessage({ command: 'add-metrics', id, metrics: processedMetrics })
 
     if (this._addedInfos.has(id)) {
-      this._addInfo(id, this._addedInfos.get(id))
+      this._addInfo(id, this._addedInfos.get(id)!)
     } else {
       this._enforceInfo(id)
     }
   }
 
-  _enforceInfo(id) {
+  _enforceInfo(id: string) {
     const info = this._agentManager.agentInfo(id)
     if (info == null) return this._agentManager.requestAgentInfo(id)
     this._addInfo(id, info)
   }
 
-  _removeAgent(id) {
+  _removeAgent(id: string) {
     this._postMessage({ command: 'remove-agent', id })
   }
 
-  _postMessage(msg) {
+  _postMessage(msg: IPostMessage) {
     if (this._panelDisposed) return
     this._panel.webview.postMessage(msg)
   }
@@ -139,7 +173,7 @@ class AgentListView extends EventEmitter {
     return webviewHtml('list')
   }
 
-  _onwebviewMessage(msg) {
+  _onwebviewMessage(msg: IResponseMessage) {
     const { event } = msg
     switch (event) {
       case 'log': {
@@ -169,24 +203,23 @@ class AgentListView extends EventEmitter {
         this._activate()
         break
       }
+      default: unhandledCase(event)
     }
   }
 
-  _onpanelDisposed(_onpanelDisposed) {
+  _onpanelDisposed() {
     this._panelDisposed = true
   }
 
-  _onagentInfoUpdated(id, info) {
+  _onagentInfoUpdated(id: string, info: IToolkitAgentInfo) {
     if (this._active) this._addInfo(id, info)
   }
 
-  _onagentMetricsAdded(id, metrics) {
+  _onagentMetricsAdded(id: string, metrics: IToolkitAgentMetric) {
     if (this._active) this._addMetrics(id, metrics)
   }
 
-  _onagentDied(id, info) {
+  _onagentDied(id: string) {
     if (this._active) this._removeAgent(id)
   }
 }
-
-module.exports = AgentListView

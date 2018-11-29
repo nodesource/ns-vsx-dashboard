@@ -1,63 +1,73 @@
-'use strict'
+import { EventEmitter } from 'events'
 
-const { EventEmitter } = require('events')
-const { logDebug, logTrace } = require('./logger')('agent-manager')
+import logger from './logger'
+const { logDebug, logTrace } = logger('agent-manager')
+import {
+  IToolkitAPI,
+  IToolkitAgentMetric,
+  IToolkitAgent,
+  IToolkitAgentInfo,
+} from 'toolkit-zmq'
 
-class AgentManager extends EventEmitter {
-  constructor(agentConnector) {
+import AgentConnector from './agent-connector'
+
+export default class AgentManager extends EventEmitter {
+  _api!: IToolkitAPI
+  _initialized: boolean;
+
+  constructor(agentConnector: AgentConnector) {
     super()
-    this._api = null
     this._initialized = false
     this._bind()
     this._init(agentConnector)
   }
 
-  get initialized() {
+  get initialized(): boolean {
     return this._initialized
   }
-  get agentIds() {
+  get agentIds(): Set<string> {
     return this._api.agentsIds
   }
-  get agentCount() {
+  get agentCount(): number {
     return this.agentIds.size
   }
-  get agents() {
+  get agents(): Map<string, IToolkitAgent> {
     return this._api.agents
   }
-  get agentsJSON() {
+  get agentsJSON(): string {
     return JSON.stringify(Array.from(this.agents), null, 2)
   }
-  get lastMetrics() {
+  get lastMetrics(): Map<string, IToolkitAgentMetric> {
     const lastMetrics = new Map()
-    for (const [ id, agent ] of this.agents) {
-      lastMetrics.set(id, { id, info: agent.info,  metrics: agent.lastMetrics })
+    for (const [id, agent] of this.agents) {
+      lastMetrics.set(id, { id, info: agent.info, metrics: agent.lastMetrics })
     }
     return lastMetrics
   }
-  get lastMetricsJSON() {
+  get lastMetricsJSON(): string {
     return JSON.stringify(Array.from(this.lastMetrics), null, 2)
   }
 
-  agentInfo(id) {
+  agentInfo(id: string): IToolkitAgentInfo {
     return this._api.agentInfo(id)
   }
 
-  agentMetrics(id) {
+  agentMetrics(id: string): IToolkitAgentMetric | null {
     if (!this.agents.has(id)) return null
     const agent = this.agents.get(id)
     if (agent == null) return null
     return agent.lastMetrics
   }
 
-  requestAgentInfo(id) {
+  requestAgentInfo(id: string) {
     this._api.requestAgentInfo(id)
   }
 
-  requestAgentCpuProfile(id) {
+  requestAgentCpuProfile(id: string) {
     this._api.requestCpuProfile(id)
   }
 
-  requestAgentHeapProfile(id) {
+  requestAgentHeapProfile(id: string) {
     this._api.requestMemSnapshot(id)
   }
 
@@ -70,7 +80,7 @@ class AgentManager extends EventEmitter {
     this._onagentHeapProfileAdded = this._onagentHeapProfileAdded.bind(this)
   }
 
-  _init(agentConnector) {
+  _init(agentConnector : AgentConnector) {
     agentConnector
       .on('agent-connector:initialized', api => {
         this._api = api
@@ -92,39 +102,37 @@ class AgentManager extends EventEmitter {
       .on('agent:snapshot-added', this._onagentHeapProfileAdded)
   }
 
-  _onagentAdded(id) {
+  _onagentAdded(id: string) {
     const info = this._api.agentInfo(id)
     logDebug('agent-added', id)
     this.emit('agent-manager:agent-added', { id, info })
   }
 
-  _onagentDied(id) {
+  _onagentDied(id: string) {
     const info = this._api.agentInfo(id)
     logDebug('agent-died', id)
     this.emit('agent-manager:agent-died', { id, info })
   }
 
-  _onagentInfoUpdated(id) {
+  _onagentInfoUpdated(id: string) {
     const info = this._api.agentInfo(id)
     logDebug('agent-updated', id)
     this.emit('agent-manager:agent-info-updated', { id, info })
   }
 
-  _onagentMetricsAdded(id) {
+  _onagentMetricsAdded(id: string) {
     const metrics = this._api.agentMetric(id)
     logTrace('agent-metrics', id)
     this.emit('agent-manager:agent-metrics-added', { id, metrics })
   }
 
-  _onagentCpuProfileAdded(id) {
+  _onagentCpuProfileAdded(id: string) {
     const profile = this._api.agentProfile(id)
     this.emit('agent-manager:agent-cpu-profile-added', { id, profile })
   }
 
-  _onagentHeapProfileAdded(id) {
+  _onagentHeapProfileAdded(id: string) {
     const profile = this._api.agentProfile(id)
     this.emit('agent-manager:agent-heap-profile-added', { id, profile })
   }
 }
-
-module.exports = AgentManager

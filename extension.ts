@@ -1,21 +1,19 @@
-'use strict'
+import { commands, Uri, window } from 'vscode'
 
-const { commands } = require('vscode')
+import AgentConnector from './src/agent-connector'
+import AgentManager from './src/agent-manager'
+import Profiler from './src/profiler'
+import AgentListView from './web/list/agent-list-view'
+import AgentDashView from './web/dash/agent-dash-view'
+import CpuProfileView, { IFrameInfo } from './web/cpu-profile/cpu-profile-view'
+import { initDevelopment } from './src/development'
+import { initAgentStatusbar } from './src/agent-statusbar'
+import { initAgentErrors } from './src/agent-errors'
 
-const AgentConnector = require('./lib/agent-connector')
-const AgentManager = require('./lib/agent-manager')
-const Profiler = require('./lib/profiler')
-const AgentListView = require('./web/list/agent-list-view')
-const AgentDashView = require('./web/dash/agent-dash-view')
-const CpuProfileView = require('./web/cpu-profile/cpu-profile-view')
-const { initDevelopment } = require('./lib/development')
-const { initAgentStatusbar } = require('./lib/agent-statusbar')
-const { initAgentErrors } = require('./lib/agent-errors')
+import logger from './src/logger'
+const { logInfo } = logger('main')
 
-const { logInfo } = require('./lib/logger')('main')
-const { Uri, window } = require('vscode')
-
-async function openFrame(frameInfo) {
+async function openFrame(frameInfo: IFrameInfo) {
   if (!frameInfo.canShow) {
     window.showErrorMessage(`Unable to open this frame as it is outside your code base`)
     return
@@ -29,7 +27,7 @@ async function openFrame(frameInfo) {
   }
 }
 
-function activate(context) {
+export function activate(context: { subscriptions: any[]; }) {
   const connector = new AgentConnector()
   const agentManager = new AgentManager(connector)
   const profiler = new Profiler(agentManager)
@@ -50,7 +48,7 @@ function activate(context) {
 
   const showSummaryCommand =
     commands.registerCommand(
-        'ns-vsx-dashboard:toggle-agent-list'
+      'ns-vsx-dashboard:toggle-agent-list'
       , () => agentListView.toggle()
     )
   context.subscriptions.push(showSummaryCommand)
@@ -58,6 +56,4 @@ function activate(context) {
   logInfo('"ns-vsx-dashboard" is now active!')
 }
 
-function deactivate() { }
-
-module.exports = { activate, deactivate }
+export function deactivate() { }

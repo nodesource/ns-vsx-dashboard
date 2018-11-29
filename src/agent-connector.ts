@@ -1,10 +1,9 @@
-'use strict'
+import { EventEmitter } from 'events'
+import { initZMQ } from 'toolkit-zmq'
+import logger from './logger'
+const { logInfo } = logger('agent-connector')
 
-const { EventEmitter } = require('events')
-const { initZMQ } = require('toolkit-zmq')
-const { logInfo } = require('./logger')('agent-connector')
-
-class AgentConnector extends EventEmitter {
+export default class AgentConnector extends EventEmitter {
   constructor() {
     super()
     this._init()
@@ -20,5 +19,3 @@ class AgentConnector extends EventEmitter {
     }
   }
 }
-
-module.exports = AgentConnector

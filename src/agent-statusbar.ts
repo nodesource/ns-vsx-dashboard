@@ -1,12 +1,14 @@
-'use strict'
+import { window, StatusBarAlignment, StatusBarItem } from 'vscode'
+import AgentManager from './agent-manager'
+import { agentIcon } from './common'
 
-const { window, StatusBarAlignment } = require('vscode')
 const PRIORITY = 1000
 
-const { agentIcon } = require('./common')
+export class AgentStatusbar {
+  _agentManager: AgentManager
+  _status!: StatusBarItem;
 
-class AgentStatusbar {
-  constructor(agentManager) {
+  constructor(agentManager: AgentManager) {
     this._agentManager = agentManager
     this._bind()
 
@@ -42,11 +44,6 @@ class AgentStatusbar {
   }
 }
 
-function initAgentStatusbar(agentManager) {
+export function initAgentStatusbar(agentManager: AgentManager) {
   return new AgentStatusbar(agentManager)
-}
-
-module.exports = {
-    initAgentStatusbar
-  , AgentStatusbar
 }

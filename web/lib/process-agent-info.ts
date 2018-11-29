@@ -1,11 +1,12 @@
 'use strict'
 
-const ta = require('time-ago')
+import * as ta from 'time-ago'
+import { IToolkitAgentInfo } from 'toolkit-zmq';
 
 const MAX_ID_LEN = 15
 const MAX_MAIN_LEN = 60
 
-function nameAgent(info) {
+function nameAgent(info: IToolkitAgentInfo) {
   if (info == null) return 'n/a'
   const { app, tags, pid } = info
   if (app !== 'untitled application') {
@@ -17,18 +18,26 @@ function nameAgent(info) {
   return `[${pid}]`
 }
 
-function getMain(main) {
+function getMain(main: string) {
   if (main.length <= MAX_MAIN_LEN) return main
   return `... ${main.slice(-(MAX_MAIN_LEN - 4))}`
 }
 
-function getId(id) {
+function getId(id: string) {
   const s = `${id}`
   if (s.length <= MAX_ID_LEN) return s
   return `${s.slice(0, MAX_ID_LEN)}...`
 }
 
-function processAgentInfo(id, info) {
+export interface IProcessedAgentInfo {
+  id: string
+  name: string
+  nodeEnv: string
+  processStart: string
+  main: string
+}
+
+export default function processAgentInfo(id: string, info: IToolkitAgentInfo) {
   const { nodeEnv, processStart, main } = info
   return {
       id: getId(id)
@@ -39,4 +48,3 @@ function processAgentInfo(id, info) {
   }
 }
 
-module.exports = processAgentInfo
