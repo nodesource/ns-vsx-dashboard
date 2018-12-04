@@ -10,7 +10,7 @@
   "categories": [
     "Other"
   ],
-  "main": "./extension",
+  "main": "./out/extension",
   "activationEvents": [
     "*"
   ],
