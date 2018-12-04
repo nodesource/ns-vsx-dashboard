@@ -10,19 +10,20 @@ export const loggerConfig = {
   LEVEL: DEBUG
 }
 
+type DebugWriter = (s: any, ...rest: any[]) => void
 export interface ILogger {
-  logWarn: Function,
-  logTrace: Function,
-  logDebug: Function,
-  logInfo: Function,
-  logError: Function
+  logWarn: DebugWriter,
+  logTrace: DebugWriter,
+  logDebug: DebugWriter,
+  logInfo: DebugWriter,
+  logError: DebugWriter
 }
 
 // debug module seem to not work in  VSCode extensions
 function debug(prefix: string, level: number) {
   return function debugWriter(s: any, ...rest: any[]) {
     if (level > loggerConfig.LEVEL) return
-    // @ts-ignore (any[] needs SymbolIterator)
+    // tslint:disable-next-line:no-console
     console.log(`${prefix}: ${s}`, ...rest)
   }
 }

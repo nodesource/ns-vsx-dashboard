@@ -1,5 +1,5 @@
-import { join } from 'path'
 import { writeFileSync } from 'fs'
+import { join } from 'path'
 import AgentManager from './agent-manager'
 
 type Options = { agentManager: AgentManager }
@@ -9,9 +9,9 @@ const agentJSONFile = join(
 )
 
 export class Development {
-  _agentManager: AgentManager;
+  _agentManager: AgentManager
 
-  constructor({ agentManager } : Options) {
+  constructor({ agentManager }: Options) {
     this._agentManager = agentManager
     this._agentManager
       .on('agent-manager:agent-added', ()  => this._onagentAdded())

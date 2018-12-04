@@ -3,17 +3,17 @@ import { EventEmitter } from 'events'
 import logger from './logger'
 const { logDebug, logTrace } = logger('agent-manager')
 import {
-  IToolkitAPI,
-  IToolkitAgentMetric,
   IToolkitAgent,
   IToolkitAgentInfo,
+  IToolkitAgentMetric,
+  IToolkitAPI
 } from 'toolkit-zmq'
 
 import AgentConnector from './agent-connector'
 
 export default class AgentManager extends EventEmitter {
   _api!: IToolkitAPI
-  _initialized: boolean;
+  _initialized: boolean
 
   constructor(agentConnector: AgentConnector) {
     super()
@@ -80,7 +80,7 @@ export default class AgentManager extends EventEmitter {
     this._onagentHeapProfileAdded = this._onagentHeapProfileAdded.bind(this)
   }
 
-  _init(agentConnector : AgentConnector) {
+  _init(agentConnector: AgentConnector) {
     agentConnector
       .on('agent-connector:initialized', api => {
         this._api = api

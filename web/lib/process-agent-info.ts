@@ -1,7 +1,7 @@
 'use strict'
 
 import * as ta from 'time-ago'
-import { IToolkitAgentInfo } from 'toolkit-zmq';
+import { IToolkitAgentInfo } from 'toolkit-zmq'
 
 const MAX_ID_LEN = 15
 const MAX_MAIN_LEN = 60
@@ -37,14 +37,13 @@ export interface IProcessedAgentInfo {
   main: string
 }
 
-export default function processAgentInfo(id: string, info: IToolkitAgentInfo) {
+export function processAgentInfo(id: string, info: IToolkitAgentInfo) {
   const { nodeEnv, processStart, main } = info
   return {
-      id: getId(id)
-    , name: nameAgent(info)
-    , nodeEnv
-    , processStart: ta.ago(processStart)
-    , main: getMain(main)
+    id: getId(id),
+    name: nameAgent(info),
+    nodeEnv,
+    processStart: ta.ago(processStart),
+    main: getMain(main)
   }
 }
-

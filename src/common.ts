@@ -1,1 +1,1 @@
-export const agentIcon : string = '🕵️'
+export const agentIcon: string = '🕵️'

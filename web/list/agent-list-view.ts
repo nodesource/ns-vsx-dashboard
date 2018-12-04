@@ -1,14 +1,17 @@
-import { IToolkitAgentMetric, IToolkitAgentInfo } from 'toolkit-zmq'
+import { IToolkitAgentInfo, IToolkitAgentMetric } from 'toolkit-zmq'
 import webviewHtml from '../../src/webview-html'
 
 import prettyBytes from '@thlorenz/pretty-bytes'
-import processAgentInfo, { IProcessedAgentInfo } from '../lib/process-agent-info'
+import {
+  IProcessedAgentInfo,
+  processAgentInfo
+} from '../lib/process-agent-info'
 
-import logger from '../../src/logger'
-import { window, ViewColumn, WebviewPanel } from 'vscode'
 import { EventEmitter } from 'events'
+import { ViewColumn, WebviewPanel, window } from 'vscode'
 import AgentManager from '../../src/agent-manager'
 import { unhandledCase } from '../../src/core'
+import logger from '../../src/logger'
 
 const { logDebug } = logger('list-view')
 
@@ -38,7 +41,8 @@ interface IProcessedAgentMetric {
   cpu: number
 }
 
-function processAgentMetrics(metrics: IToolkitAgentMetric): IProcessedAgentMetric {
+function processAgentMetrics(
+  metrics: IToolkitAgentMetric): IProcessedAgentMetric {
   const {
     heapUsed,
     activeRequests,

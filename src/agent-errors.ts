@@ -2,6 +2,8 @@
 
 import { window } from 'vscode'
 import AgentManager from './agent-manager'
+import logger from './logger'
+const { logError } = logger('agent-errors')
 
 type Options = { agentManager: AgentManager }
 
@@ -27,8 +29,9 @@ export class AgentErrors {
 
   _handleError(type: string, err: Error) {
     const icon = errorIcons.has(type) ? errorIcons.get(type) : defaultErrorIcon
-    console.error(err)
-    window.showErrorMessage(`${icon} unable to connect to agent(s)`, err.toString())
+    logError(err)
+    window.showErrorMessage(
+      `${icon} unable to connect to agent(s)`, err.toString())
   }
 }
 

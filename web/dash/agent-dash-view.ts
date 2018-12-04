@@ -1,11 +1,14 @@
 import webviewHtml from '../../src/webview-html'
 
-import processAgentInfo, { IProcessedAgentInfo } from '../lib/process-agent-info'
-import logger from '../../src/logger'
-import { window, ViewColumn, WebviewPanel } from 'vscode'
+import { IToolkitAgentInfo, IToolkitAgentMetric } from 'toolkit-zmq'
+import { ViewColumn, WebviewPanel, window } from 'vscode'
 import AgentManager from '../../src/agent-manager'
 import { unhandledCase } from '../../src/core'
-import { IToolkitAgentMetric, IToolkitAgentInfo } from 'toolkit-zmq'
+import logger from '../../src/logger'
+import {
+  IProcessedAgentInfo,
+  processAgentInfo
+} from '../lib/process-agent-info'
 
 const { logDebug } = logger('list-view')
 
@@ -63,10 +66,10 @@ export default class AgentDashView {
   toggle() {
     if (this._panelDisposed) {
       this._panel = window.createWebviewPanel(
-          `n|s dashboard:agent ${this._agentId}`
-        , `N|S Agent [${this._agentId.slice(0, 8)}..]`
-        , ViewColumn.Active
-        , { enableScripts: true }
+        `n|s dashboard:agent ${this._agentId}`,
+        `N|S Agent [${this._agentId.slice(0, 8)}..]`,
+        ViewColumn.Active,
+        { enableScripts: true }
       )
       this._panel.webview.html = this._html
       this._panel.onDidDispose(this._onpanelDisposed)
@@ -106,7 +109,10 @@ export default class AgentDashView {
   _addInfo(info: IToolkitAgentInfo) {
     if (info == null) return
     const processed = processAgentInfo(this._agentId, info)
-    this._postMessage({ command: 'add-info', id: this._agentId, info: processed })
+    this._postMessage({
+      command: 'add-info',
+      id: this._agentId, info: processed
+    })
   }
 
   _removeAgent(id: string) {

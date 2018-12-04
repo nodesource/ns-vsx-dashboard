@@ -1,4 +1,4 @@
-import { window, StatusBarAlignment, StatusBarItem } from 'vscode'
+import { StatusBarAlignment, StatusBarItem, window } from 'vscode'
 import AgentManager from './agent-manager'
 import { agentIcon } from './common'
 
@@ -6,7 +6,7 @@ const PRIORITY = 1000
 
 export class AgentStatusbar {
   _agentManager: AgentManager
-  _status!: StatusBarItem;
+  _status!: StatusBarItem
 
   constructor(agentManager: AgentManager) {
     this._agentManager = agentManager

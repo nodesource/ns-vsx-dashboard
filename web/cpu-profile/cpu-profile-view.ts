@@ -4,12 +4,12 @@ import {
   processCpuProfile
 } from 'flamegraph'
 
-import { window, ViewColumn, WebviewPanel } from 'vscode'
 import { EventEmitter } from 'events'
-import webviewHtml from '../../src/webview-html'
+import { ViewColumn, WebviewPanel, window } from 'vscode'
 import AgentManager from '../../src/agent-manager'
+import { unhandledCase } from '../../src/core'
 import logger from '../../src/logger'
-import { unhandledCase } from '../../src/core';
+import webviewHtml from '../../src/webview-html'
 
 const { logDebug } = logger('list-view')
 const fnRx = /^([^/]*)([^:]+):(\d*)/
@@ -118,7 +118,10 @@ export default class CpuProfileView extends EventEmitter {
     logDebug('Activating CPU Profile view')
     this._active = true
     if (this._pendingProfile != null) {
-      this._postMessage({ command: 'add-profile', profile: this._pendingProfile })
+      this._postMessage({
+        command: 'add-profile',
+        profile: this._pendingProfile
+      })
       this._renderedProfile = this._pendingProfile
       this._pendingProfile = null
     }
@@ -141,7 +144,7 @@ export default class CpuProfileView extends EventEmitter {
   _processFn(fn: string) {
     const m = fn.match(fnRx)
     if (m == null) return { canShow: false }
-    const [, fnName, fileName, line] = m
+    const [ , fnName, fileName, line ] = m
     return { canShow: true, fn: fnName, fileName, line }
   }
 }
