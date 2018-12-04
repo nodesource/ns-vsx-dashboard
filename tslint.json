@@ -1,0 +1,24 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+      "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+      "semicolon": [true, "never"],
+      "quotemark": [true, "single", "jsx-double"],
+      "curly": [true, "ignore-same-line"],
+      "variable-name": [true, "check-format", "allow-leading-underscore"],
+      "interface-name" : [false],
+      "member-access": [true, "no-public"],
+      "no-empty": [true, "allow-empty-functions"],
+      "trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
+      "object-literal-sort-keys": [false],
+      "max-classes-per-file": [true, 10],
+      "max-line-length": [true, 80],
+      "arrow-parens": [true, "ban-single-arg-parens"],
+      "interface-over-type-literal": false
+    },
+    "linterOptions": { "exclude": [ "**/*.json" ] },
+    "rulesDirectory": []
+}

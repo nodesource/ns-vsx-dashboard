@@ -16,15 +16,26 @@
   ],
   "contributes": {},
   "scripts": {
-    "postinstall": "node ./node_modules/vscode/bin/install",
+    "vscode:prepublish": "npm run tsc",
+    "watch": "tsc -watch -p ./",
+    "tsc": "rm -rf out/* && tsc -p .",
+    "tsl": "tslint -p . --force -t stylish",
+    "tsl:fix": "tslint -p . --force -t stylish --fix",
+    "tsfmt": "tsfmt --baseDir . -r",
+    "lint": "npm run tsc &&  npm run tsl",
+    "post:pretty-bytes": "cd node_modules/@types && ln -sf pretty-bytes thlorenz__pretty-bytes",
+    "post:vscode": "node ./node_modules/vscode/bin/install",
+    "postinstall": "npm run post:vscode && npm run post:pretty-bytes",
     "test": "node ./node_modules/vscode/bin/test",
     "webview.list": "(cd web/list && npm run webview)"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
     "@types/node": "~10.12.10",
-    "eslint": "^4.11.0",
-    "typescript": "^2.6.1",
+    "@types/pretty-bytes": "~5.1.0",
+    "tslint": "~5.11.0",
+    "typescript": "~3.2.1",
+    "typescript-formatter": "~7.2.2",
     "vscode": "^1.1.21"
   },
   "dependencies": {
