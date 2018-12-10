@@ -6,7 +6,7 @@ import {
 
 import { EventEmitter } from 'events'
 import { ViewColumn, WebviewPanel, window } from 'vscode'
-import AgentManager from '../../src/agent-manager'
+import { AgentManager } from '../../src/agent-manager'
 import { unhandledCase } from '../../src/core'
 import logger from '../../src/logger'
 import webviewHtml from '../../src/webview-html'
@@ -72,10 +72,10 @@ export default class CpuProfileView extends EventEmitter {
   _toggle(forceShow = true) {
     if (this._panelDisposed) {
       this._panel = window.createWebviewPanel(
-        'n|s dashboard:cpu-profile'
-        , 'N|S Dashboard CPU Profile'
-        , ViewColumn.Active
-        , { enableScripts: true }
+        'n|s dashboard:cpu-profile',
+        'N|S Dashboard CPU Profile',
+        ViewColumn.Active,
+        { enableScripts: true }
       )
       this._panel.webview.html = this._html
       this._panel.onDidDispose(this._onpanelDisposed)
@@ -144,7 +144,7 @@ export default class CpuProfileView extends EventEmitter {
   _processFn(fn: string) {
     const m = fn.match(fnRx)
     if (m == null) return { canShow: false }
-    const [ , fnName, fileName, line ] = m
+    const [, fnName, fileName, line] = m
     return { canShow: true, fn: fnName, fileName, line }
   }
 }

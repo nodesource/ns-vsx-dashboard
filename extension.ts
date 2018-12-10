@@ -2,7 +2,7 @@ import { commands, Uri, window } from 'vscode'
 
 import AgentConnector from './src/agent-connector'
 import { initAgentErrors } from './src/agent-errors'
-import AgentManager from './src/agent-manager'
+import { AgentManager } from './src/agent-manager'
 import { initAgentStatusbar } from './src/agent-statusbar'
 import { initDevelopment } from './src/development'
 import Profiler from './src/profiler'
@@ -50,8 +50,8 @@ export function activate(context: { subscriptions: any[]; }) {
 
   const showSummaryCommand =
     commands.registerCommand(
-      'ns-vsx-dashboard:toggle-agent-list'
-      , () => agentListView.toggle()
+      'ns-vsx-dashboard:toggle-agent-list',
+      () => agentListView.toggle()
     )
   context.subscriptions.push(showSummaryCommand)
 

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { window } from 'vscode'
-import AgentManager from './agent-manager'
+import { AgentManager } from './agent-manager'
 
 export default class Profiler extends EventEmitter {
   _agentManager: AgentManager

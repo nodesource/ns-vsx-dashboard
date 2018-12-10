@@ -9,7 +9,7 @@ export default class AgentConnector extends EventEmitter {
     this._init()
   }
 
-  async _init() {
+  private async _init() {
     try {
       const api = await initZMQ()
       logInfo('API initialized')

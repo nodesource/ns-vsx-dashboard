@@ -2,7 +2,7 @@ import webviewHtml from '../../src/webview-html'
 
 import { IToolkitAgentInfo, IToolkitAgentMetric } from 'toolkit-zmq'
 import { ViewColumn, WebviewPanel, window } from 'vscode'
-import AgentManager from '../../src/agent-manager'
+import { AgentManager } from '../../src/agent-manager'
 import { unhandledCase } from '../../src/core'
 import logger from '../../src/logger'
 import {

@@ -12,7 +12,7 @@
   "insertSpaceAfterKeywordsInControlFlowStatements": true,
   "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
   "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
-  "insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": true,
+  "insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
   "insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
   "insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false,
   "insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": false,

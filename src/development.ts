@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs'
 import { join } from 'path'
-import AgentManager from './agent-manager'
+import { AgentManager } from './agent-manager'
 
 type Options = { agentManager: AgentManager }
 
@@ -14,7 +14,7 @@ export class Development {
   constructor({ agentManager }: Options) {
     this._agentManager = agentManager
     this._agentManager
-      .on('agent-manager:agent-added', ()  => this._onagentAdded())
+      .on('agent-manager:agent-added', () => this._onagentAdded())
   }
 
   _onagentAdded() {

@@ -4,6 +4,7 @@ import logger from './logger'
 const { logDebug, logTrace } = logger('agent-manager')
 import {
   IToolkitAgent,
+  IToolkitAgentCpuProfile,
   IToolkitAgentInfo,
   IToolkitAgentMetric,
   IToolkitAPI
@@ -11,14 +12,43 @@ import {
 
 import AgentConnector from './agent-connector'
 
-export default class AgentManager extends EventEmitter {
-  _api!: IToolkitAPI
-  _initialized: boolean
+export const enum AgentManagerEvent {
+  ConnectorError = 'agent-manager:connector-error',
+  AgentDied = 'agent-manager:agent-died',
+  AgentInfoUpdated = 'agent-manager:agent-info-updated',
+  AgentMetricsAdded = 'agent-manager:agent-metrics-added',
+  AgentCpuProfileAdded = 'agent-manager:agent-cpu-profile-added',
+  AgentHeapProfileAdded = 'agent-manager:agent-heap-profile-added'
+}
+
+type ConnectorErrorListener = (err: Error) => void
+type AgentInfoEventListener =
+  (payload: { id: string, info: IToolkitAgentInfo }) => void
+type AgentMetricEventListener =
+  (payload: { id: string, metrics: IToolkitAgentMetric }) => void
+type AgentProfileEventListener =
+  (payload: { id: string, profile: IToolkitAgentCpuProfile }) => void
+
+export interface IAgentManager {
+  on(event: AgentManagerEvent.ConnectorError,
+    listener: ConnectorErrorListener): this
+  on(event:
+    | AgentManagerEvent.AgentDied
+    | AgentManagerEvent.AgentInfoUpdated,
+    listener: AgentInfoEventListener): this
+  on(event: AgentManagerEvent.AgentMetricsAdded,
+    listener: AgentMetricEventListener): this
+  on(event: AgentManagerEvent.AgentCpuProfileAdded,
+    listener: AgentProfileEventListener): this
+}
+
+export class AgentManager extends EventEmitter implements IAgentManager {
+  private _api!: IToolkitAPI
+  private _initialized: boolean
 
   constructor(agentConnector: AgentConnector) {
     super()
     this._initialized = false
-    this._bind()
     this._init(agentConnector)
   }
 
@@ -71,16 +101,7 @@ export default class AgentManager extends EventEmitter {
     this._api.requestMemSnapshot(id)
   }
 
-  _bind() {
-    this._onagentAdded = this._onagentAdded.bind(this)
-    this._onagentDied = this._onagentDied.bind(this)
-    this._onagentInfoUpdated = this._onagentInfoUpdated.bind(this)
-    this._onagentMetricsAdded = this._onagentMetricsAdded.bind(this)
-    this._onagentCpuProfileAdded = this._onagentCpuProfileAdded.bind(this)
-    this._onagentHeapProfileAdded = this._onagentHeapProfileAdded.bind(this)
-  }
-
-  _init(agentConnector: AgentConnector) {
+  private _init(agentConnector: AgentConnector) {
     agentConnector
       .on('agent-connector:initialized', api => {
         this._api = api
@@ -88,11 +109,11 @@ export default class AgentManager extends EventEmitter {
         this._subscribeAgentEvents()
       })
       .on('agent-connector:error'
-        , err => this.emit('agent-manager:connector-error', err)
+        , err => this.emit(AgentManagerEvent.ConnectorError, err)
       )
   }
 
-  _subscribeAgentEvents() {
+  private _subscribeAgentEvents() {
     this._api
       .on('agent:added', this._onagentAdded)
       .on('agent:died', this._onagentDied)
@@ -102,37 +123,37 @@ export default class AgentManager extends EventEmitter {
       .on('agent:snapshot-added', this._onagentHeapProfileAdded)
   }
 
-  _onagentAdded(id: string) {
+  private _onagentAdded = (id: string) => {
     const info = this._api.agentInfo(id)
     logDebug('agent-added', id)
     this.emit('agent-manager:agent-added', { id, info })
   }
 
-  _onagentDied(id: string) {
+  private _onagentDied = (id: string) => {
     const info = this._api.agentInfo(id)
     logDebug('agent-died', id)
-    this.emit('agent-manager:agent-died', { id, info })
+    this.emit(AgentManagerEvent.AgentDied, { id, info })
   }
 
-  _onagentInfoUpdated(id: string) {
+  private _onagentInfoUpdated = (id: string) => {
     const info = this._api.agentInfo(id)
     logDebug('agent-updated', id)
-    this.emit('agent-manager:agent-info-updated', { id, info })
+    this.emit(AgentManagerEvent.AgentInfoUpdated, { id, info })
   }
 
-  _onagentMetricsAdded(id: string) {
+  private _onagentMetricsAdded = (id: string) => {
     const metrics = this._api.agentMetric(id)
     logTrace('agent-metrics', id)
-    this.emit('agent-manager:agent-metrics-added', { id, metrics })
+    this.emit(AgentManagerEvent.AgentMetricsAdded, { id, metrics })
   }
 
-  _onagentCpuProfileAdded(id: string) {
+  private _onagentCpuProfileAdded = (id: string) => {
     const profile = this._api.agentProfile(id)
-    this.emit('agent-manager:agent-cpu-profile-added', { id, profile })
+    this.emit(AgentManagerEvent.AgentCpuProfileAdded, { id, profile })
   }
 
-  _onagentHeapProfileAdded(id: string) {
+  private _onagentHeapProfileAdded = (id: string) => {
     const profile = this._api.agentProfile(id)
-    this.emit('agent-manager:agent-heap-profile-added', { id, profile })
+    this.emit(AgentManagerEvent.AgentHeapProfileAdded, { id, profile })
   }
 }
