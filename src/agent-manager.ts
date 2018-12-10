@@ -14,6 +14,7 @@ import AgentConnector from './agent-connector'
 
 export const enum AgentManagerEvent {
   ConnectorError = 'agent-manager:connector-error',
+  AgentAdded = 'agent-manager:agent-added',
   AgentDied = 'agent-manager:agent-died',
   AgentInfoUpdated = 'agent-manager:agent-info-updated',
   AgentMetricsAdded = 'agent-manager:agent-metrics-added',
@@ -21,18 +22,23 @@ export const enum AgentManagerEvent {
   AgentHeapProfileAdded = 'agent-manager:agent-heap-profile-added'
 }
 
-type ConnectorErrorListener = (err: Error) => void
-type AgentInfoEventListener =
+export type ConnectorErrorListener = (err: Error) => void
+export type AgentInfoEventListener =
   (payload: { id: string, info: IToolkitAgentInfo }) => void
-type AgentMetricEventListener =
+export type AgentMetricEventListener =
   (payload: { id: string, metrics: IToolkitAgentMetric }) => void
-type AgentProfileEventListener =
+export type AgentProfileEventListener =
   (payload: { id: string, profile: IToolkitAgentCpuProfile }) => void
 
 export interface IAgentManager {
+  agents: Map<string, IToolkitAgent>
+  agentCount: number
+  lastMetrics: Map<string, IToolkitAgentMetric>
+
   on(event: AgentManagerEvent.ConnectorError,
     listener: ConnectorErrorListener): this
   on(event:
+    | AgentManagerEvent.AgentAdded
     | AgentManagerEvent.AgentDied
     | AgentManagerEvent.AgentInfoUpdated,
     listener: AgentInfoEventListener): this
@@ -40,6 +46,10 @@ export interface IAgentManager {
     listener: AgentMetricEventListener): this
   on(event: AgentManagerEvent.AgentCpuProfileAdded,
     listener: AgentProfileEventListener): this
+
+  agentInfo(id: string): IToolkitAgentInfo
+  agentMetrics(id: string): IToolkitAgentMetric | null
+  requestAgentInfo(id: string): void
 }
 
 export class AgentManager extends EventEmitter implements IAgentManager {
@@ -126,7 +136,7 @@ export class AgentManager extends EventEmitter implements IAgentManager {
   private _onagentAdded = (id: string) => {
     const info = this._api.agentInfo(id)
     logDebug('agent-added', id)
-    this.emit('agent-manager:agent-added', { id, info })
+    this.emit(AgentManagerEvent.AgentAdded, { id, info })
   }
 
   private _onagentDied = (id: string) => {

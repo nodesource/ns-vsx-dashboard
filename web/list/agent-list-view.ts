@@ -9,7 +9,12 @@ import {
 
 import { EventEmitter } from 'events'
 import { ViewColumn, WebviewPanel, window } from 'vscode'
-import { AgentManager } from '../../src/agent-manager'
+import {
+  AgentInfoEventListener,
+  AgentManagerEvent,
+  AgentMetricEventListener,
+  IAgentManager
+} from '../../src/agent-manager'
 import { unhandledCase } from '../../src/core'
 import logger from '../../src/logger'
 
@@ -59,16 +64,15 @@ function processAgentMetrics(
 }
 
 export default class AgentListView extends EventEmitter {
-  private _agentManager: AgentManager
+  private _agentManager: IAgentManager
   private _html: string
   private _panelDisposed: boolean = true
   private _active: boolean = false
   private _panel!: WebviewPanel
   private _addedInfos: Map<string, IToolkitAgentInfo>
 
-  constructor(agentManager: AgentManager) {
+  constructor(agentManager: IAgentManager) {
     super()
-    this._bind()
     this._agentManager = agentManager
     this._html = this._webviewHtml()
     this._panelDisposed = true
@@ -77,22 +81,11 @@ export default class AgentListView extends EventEmitter {
     this._subscribeEvents()
   }
 
-  _bind() {
-    this._onwebviewMessage = this._onwebviewMessage.bind(this)
-    this._onpanelDisposed = this._onpanelDisposed.bind(this)
-  }
-
   _subscribeEvents() {
     this._agentManager
-      .on('agent-manager:agent-info-updated', ({ id, info }) => {
-        this._onagentInfoUpdated(id, info)
-      })
-      .on('agent-manager:agent-metrics-added', ({ id, metrics }) => {
-        this._onagentMetricsAdded(id, metrics)
-      })
-      .on('agent-manager:agent-died', ({ id }) => {
-        this._onagentDied(id)
-      })
+      .on(AgentManagerEvent.AgentInfoUpdated, this._onagentInfoUpdated)
+      .on(AgentManagerEvent.AgentMetricsAdded, this._onagentMetricsAdded)
+      .on(AgentManagerEvent.AgentDied, this._onagentDied)
   }
 
   toggle() {
@@ -215,15 +208,15 @@ export default class AgentListView extends EventEmitter {
     this._panelDisposed = true
   }
 
-  _onagentInfoUpdated(id: string, info: IToolkitAgentInfo) {
+  _onagentInfoUpdated: AgentInfoEventListener = ({ id, info }) => {
     if (this._active) this._addInfo(id, info)
   }
 
-  _onagentMetricsAdded(id: string, metrics: IToolkitAgentMetric) {
+  _onagentMetricsAdded: AgentMetricEventListener = ({ id, metrics }) => {
     if (this._active) this._addMetrics(id, metrics)
   }
 
-  _onagentDied(id: string) {
+  _onagentDied: AgentInfoEventListener = ({ id }) => {
     if (this._active) this._removeAgent(id)
   }
 }

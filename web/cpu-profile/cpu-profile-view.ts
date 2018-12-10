@@ -1,12 +1,15 @@
 import {
-  ICPUProfile,
   IProcessedCPUProfile,
   processCpuProfile
 } from 'flamegraph'
 
 import { EventEmitter } from 'events'
 import { ViewColumn, WebviewPanel, window } from 'vscode'
-import { AgentManager } from '../../src/agent-manager'
+import {
+  AgentManager,
+  AgentManagerEvent,
+  AgentProfileEventListener
+} from '../../src/agent-manager'
 import { unhandledCase } from '../../src/core'
 import logger from '../../src/logger'
 import webviewHtml from '../../src/webview-html'
@@ -27,9 +30,9 @@ interface IPostMessage {
 
 export interface IFrameInfo {
   canShow: boolean
-  fn: string
-  fileName: string
-  line: number
+  fn?: string
+  fileName?: string
+  line?: number
 }
 
 export type CpuProfileViewEvent = 'cpu-profile:frame-selected'
@@ -47,23 +50,15 @@ export default class CpuProfileView extends EventEmitter {
     super()
     this._agentManager = agentManager
     this._html = this._webviewHtml()
-    this._bind()
     this._subscribeEvents()
-  }
-
-  _bind() {
-    this._onwebviewMessage = this._onwebviewMessage.bind(this)
-    this._onpanelDisposed = this._onpanelDisposed.bind(this)
   }
 
   _subscribeEvents() {
     this._agentManager
-      .on('agent-manager:agent-cpu-profile-added', ({ id, profile }) => {
-        this._onagentCpuProfileAdded(id, profile)
-      })
+      .on(AgentManagerEvent.AgentCpuProfileAdded, this._onagentCpuProfileAdded)
   }
 
-  _onagentCpuProfileAdded(_: string, profile: ICPUProfile) {
+  _onagentCpuProfileAdded: AgentProfileEventListener = ({ profile }) => {
     this._toggle()
     this._renderedProfile = null
     this._pendingProfile = processCpuProfile(profile)
@@ -89,7 +84,7 @@ export default class CpuProfileView extends EventEmitter {
     }
   }
 
-  _onwebviewMessage(msg: IResponseMessage) {
+  _onwebviewMessage = (msg: IResponseMessage) => {
     const { event } = msg
     switch (event) {
       case 'log': {
@@ -110,7 +105,7 @@ export default class CpuProfileView extends EventEmitter {
     }
   }
 
-  _onpanelDisposed() {
+  _onpanelDisposed = () => {
     this._panelDisposed = true
   }
 
@@ -141,10 +136,10 @@ export default class CpuProfileView extends EventEmitter {
     return webviewHtml('cpu-profile')
   }
 
-  _processFn(fn: string) {
+  _processFn(fn: string): IFrameInfo {
     const m = fn.match(fnRx)
     if (m == null) return { canShow: false }
     const [, fnName, fileName, line] = m
-    return { canShow: true, fn: fnName, fileName, line }
+    return { canShow: true, fn: fnName, fileName, line: parseInt(line) }
   }
 }

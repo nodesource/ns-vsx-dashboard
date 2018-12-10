@@ -16,6 +16,7 @@
       "no-empty": [true, "allow-empty-functions"],
       "object-literal-sort-keys": [false],
       "quotemark": [true, "single", "jsx-double"],
+      "radix": [false],
       "semicolon": [true, "never"],
       "trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
       "variable-name": [false]
