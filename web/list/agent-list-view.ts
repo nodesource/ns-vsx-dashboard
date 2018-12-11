@@ -1,22 +1,23 @@
+import prettyBytes from '@thlorenz/pretty-bytes'
+import { EventEmitter } from 'events'
 import { IToolkitAgentInfo, IToolkitAgentMetric } from 'toolkit-zmq'
+import { ViewColumn, WebviewPanel, window } from 'vscode'
+
+import { unhandledCase } from '../../src/core'
+import logger from '../../src/logger'
 import webviewHtml from '../../src/webview-html'
 
-import prettyBytes from '@thlorenz/pretty-bytes'
 import {
   IProcessedAgentInfo,
   processAgentInfo
 } from '../lib/process-agent-info'
 
-import { EventEmitter } from 'events'
-import { ViewColumn, WebviewPanel, window } from 'vscode'
 import {
   AgentInfoEventListener,
+  AgentManager,
   AgentManagerEvent,
-  AgentMetricEventListener,
-  IAgentManager
+  AgentMetricEventListener
 } from '../../src/agent-manager'
-import { unhandledCase } from '../../src/core'
-import logger from '../../src/logger'
 
 const { logDebug } = logger('list-view')
 
@@ -63,15 +64,15 @@ function processAgentMetrics(
   }
 }
 
-export default class AgentListView extends EventEmitter {
-  private _agentManager: IAgentManager
+export class AgentListView extends EventEmitter {
+  private _agentManager: AgentManager
   private _html: string
   private _panelDisposed: boolean = true
   private _active: boolean = false
   private _panel!: WebviewPanel
   private _addedInfos: Map<string, IToolkitAgentInfo>
 
-  constructor(agentManager: IAgentManager) {
+  constructor(agentManager: AgentManager) {
     super()
     this._agentManager = agentManager
     this._html = this._webviewHtml()

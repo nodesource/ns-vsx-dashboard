@@ -1,15 +1,17 @@
-import webviewHtml from '../../src/webview-html'
-
 import { IToolkitAgentInfo, IToolkitAgentMetric } from 'toolkit-zmq'
 import { ViewColumn, WebviewPanel, window } from 'vscode'
-import {
-  AgentInfoEventListener,
-  AgentManagerEvent,
-  AgentMetricEventListener,
-  IAgentManager
-} from '../../src/agent-manager'
+
 import { unhandledCase } from '../../src/core'
 import logger from '../../src/logger'
+import webviewHtml from '../../src/webview-html'
+
+import {
+  AgentInfoEventListener,
+  AgentManager,
+  AgentManagerEvent,
+  AgentMetricEventListener
+} from '../../src/agent-manager'
+
 import {
   IProcessedAgentInfo,
   processAgentInfo
@@ -30,15 +32,15 @@ interface IPostMessage {
   metrics?: IToolkitAgentMetric
 }
 
-export default class AgentDashView {
-  private _agentManager: IAgentManager
+export class AgentDashView {
+  private _agentManager: AgentManager
   private _html: string
   private _panelDisposed: boolean = true
   private _active: boolean = false
   private _panel!: WebviewPanel
   private _agentId!: string
 
-  constructor(agentManager: IAgentManager) {
+  constructor(agentManager: AgentManager) {
     this._agentManager = agentManager
     this._html = this._webviewHtml()
     this._subscribeEvents()

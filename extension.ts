@@ -1,19 +1,20 @@
 import { commands, Uri, window } from 'vscode'
 
-import AgentConnector from './src/agent-connector'
+import { AgentConnector } from './src/agent-connector'
 import { initAgentErrors } from './src/agent-errors'
 import { AgentManager } from './src/agent-manager'
 import { initAgentStatusbar } from './src/agent-statusbar'
 import { initDevelopment } from './src/development'
-import Profiler from './src/profiler'
-import CpuProfileView, { IFrameInfo } from './web/cpu-profile/cpu-profile-view'
-import AgentDashView from './web/dash/agent-dash-view'
-import AgentListView from './web/list/agent-list-view'
+import { Profiler } from './src/profiler'
+
+import { CpuProfileView, FrameInfo } from './web/cpu-profile/cpu-profile-view'
+import { AgentDashView } from './web/dash/agent-dash-view'
+import { AgentListView } from './web/list/agent-list-view'
 
 import logger from './src/logger'
 const { logInfo } = logger('main')
 
-async function openFrame(frameInfo: IFrameInfo) {
+async function openFrame(frameInfo: FrameInfo) {
   if (!frameInfo.canShow) {
     window.showErrorMessage(
       `Unable to open this frame as it is outside your code base`)

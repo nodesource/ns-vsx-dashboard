@@ -1,16 +1,18 @@
 import { EventEmitter } from 'events'
 
+import { AgentConnector, AgentConnectorEvent } from './agent-connector'
+
 import logger from './logger'
 const { logDebug, logTrace } = logger('agent-manager')
+
 import {
   IToolkitAgent,
   IToolkitAgentCpuProfile,
   IToolkitAgentInfo,
   IToolkitAgentMetric,
+  IToolkitAgentSnapshot,
   IToolkitAPI
 } from 'toolkit-zmq'
-
-import AgentConnector from './agent-connector'
 
 export const enum AgentManagerEvent {
   ConnectorError = 'agent-manager:connector-error',
@@ -27,14 +29,12 @@ export type AgentInfoEventListener =
   (payload: { id: string, info: IToolkitAgentInfo }) => void
 export type AgentMetricEventListener =
   (payload: { id: string, metrics: IToolkitAgentMetric }) => void
-export type AgentProfileEventListener =
+export type AgentCpuProfileEventListener =
   (payload: { id: string, profile: IToolkitAgentCpuProfile }) => void
+export type AgentHeapProfileEventListener =
+  (payload: { id: string, profile: IToolkitAgentSnapshot }) => void
 
-export interface IAgentManager {
-  agents: Map<string, IToolkitAgent>
-  agentCount: number
-  lastMetrics: Map<string, IToolkitAgentMetric>
-
+export interface AgentManager {
   on(event: AgentManagerEvent.ConnectorError,
     listener: ConnectorErrorListener): this
   on(event:
@@ -45,14 +45,16 @@ export interface IAgentManager {
   on(event: AgentManagerEvent.AgentMetricsAdded,
     listener: AgentMetricEventListener): this
   on(event: AgentManagerEvent.AgentCpuProfileAdded,
-    listener: AgentProfileEventListener): this
+    listener: AgentCpuProfileEventListener): this
+  on(event: AgentManagerEvent.AgentHeapProfileAdded,
+    listener: AgentHeapProfileEventListener): this
 
   agentInfo(id: string): IToolkitAgentInfo
   agentMetrics(id: string): IToolkitAgentMetric | null
   requestAgentInfo(id: string): void
 }
 
-export class AgentManager extends EventEmitter implements IAgentManager {
+export class AgentManager extends EventEmitter {
   private _api!: IToolkitAPI
   private _initialized: boolean
 
@@ -113,13 +115,13 @@ export class AgentManager extends EventEmitter implements IAgentManager {
 
   private _init(agentConnector: AgentConnector) {
     agentConnector
-      .on('agent-connector:initialized', api => {
+      .on(AgentConnectorEvent.Initialized, (api: IToolkitAPI) => {
         this._api = api
         this._initialized = true
         this._subscribeAgentEvents()
       })
-      .on('agent-connector:error'
-        , err => this.emit(AgentManagerEvent.ConnectorError, err)
+      .on(AgentConnectorEvent.Error, (err: Error) =>
+        this.emit(AgentManagerEvent.ConnectorError, err)
       )
   }
 

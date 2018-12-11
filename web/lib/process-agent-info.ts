@@ -1,5 +1,3 @@
-'use strict'
-
 import * as ta from 'time-ago'
 import { IToolkitAgentInfo } from 'toolkit-zmq'
 

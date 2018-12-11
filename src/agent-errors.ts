@@ -1,11 +1,10 @@
-'use strict'
-
 import { window } from 'vscode'
-import { AgentManagerEvent, IAgentManager } from './agent-manager'
+
+import { AgentManager, AgentManagerEvent } from './agent-manager'
 import logger from './logger'
 const { logError } = logger('agent-errors')
 
-type Options = { agentManager: IAgentManager }
+type Options = { agentManager: AgentManager }
 
 const defaultErrorIcon = '🚫'
 const errorIcons = new Map([
@@ -13,7 +12,7 @@ const errorIcons = new Map([
 ])
 
 export class AgentErrors {
-  private _agentManager: IAgentManager
+  private _agentManager: AgentManager
 
   constructor({ agentManager }: Options) {
     this._agentManager = agentManager
@@ -22,7 +21,7 @@ export class AgentErrors {
 
   private _subscribeErrorEvents() {
     this._agentManager.on(AgentManagerEvent.ConnectorError,
-      err => this._handleError('connector', err))
+      (err: Error) => this._handleError('connector', err))
   }
 
   private _handleError(type: string, err: Error) {

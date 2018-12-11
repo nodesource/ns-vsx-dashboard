@@ -1,9 +1,22 @@
 import { EventEmitter } from 'events'
-import { initZMQ } from 'toolkit-zmq'
+import { initZMQ, IToolkitAPI } from 'toolkit-zmq'
+
 import logger from './logger'
 const { logInfo } = logger('agent-connector')
 
-export default class AgentConnector extends EventEmitter {
+export const enum AgentConnectorEvent {
+  Initialized = 'agent-connector:initialized',
+  Error = 'agent-connector:error'
+}
+
+export interface AgentConnector {
+  on(event: AgentConnectorEvent.Initialized,
+    listener: (api: IToolkitAPI) => void): this
+  on(event: AgentConnectorEvent.Error,
+    listener: (err: Error) => void): this
+}
+
+export class AgentConnector extends EventEmitter {
   constructor() {
     super()
     this._init()
@@ -13,9 +26,9 @@ export default class AgentConnector extends EventEmitter {
     try {
       const api = await initZMQ()
       logInfo('API initialized')
-      this.emit('agent-connector:initialized', api)
+      this.emit(AgentConnectorEvent.Initialized, api)
     } catch (err) {
-      this.emit('agent-connector:error', err)
+      this.emit(AgentConnectorEvent.Error, err)
     }
   }
 }
