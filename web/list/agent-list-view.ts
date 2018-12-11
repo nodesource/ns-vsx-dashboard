@@ -170,7 +170,7 @@ export default class AgentListView extends EventEmitter {
     return webviewHtml('list')
   }
 
-  _onwebviewMessage(msg: IResponseMessage) {
+  _onwebviewMessage = (msg: IResponseMessage) => {
     const { event } = msg
     switch (event) {
       case 'log': {
@@ -204,7 +204,7 @@ export default class AgentListView extends EventEmitter {
     }
   }
 
-  _onpanelDisposed() {
+  _onpanelDisposed = () => {
     this._panelDisposed = true
   }
 
