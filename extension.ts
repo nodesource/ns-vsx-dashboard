@@ -1,4 +1,11 @@
-import { commands, Uri, window } from 'vscode'
+import {
+  commands,
+  Range,
+  Selection,
+  TextEditorRevealType,
+  Uri,
+  window
+} from 'vscode'
 
 import { AgentConnector } from './src/agent-connector'
 import { initAgentErrors } from './src/agent-errors'
@@ -21,8 +28,17 @@ async function openFrame(frameInfo: FrameInfo) {
     return
   }
   const uri = Uri.parse(`file://${frameInfo.fileName}`)
+  // editor lines are zero based
+  const line = frameInfo.line != null ? frameInfo.line - 1 : 0
+  const range = new Range(line, 0, line, 0)
+  // select the entire line
+  const selection = new Selection(line, 0, line, Number.MAX_SAFE_INTEGER)
   try {
     await commands.executeCommand('vscode.open', uri)
+    const editor = window.activeTextEditor
+    if (editor == null) return
+    editor.revealRange(range, TextEditorRevealType.InCenter)
+    editor.selection = selection
   } catch (err) {
     window.showErrorMessage(`Unable to open ${frameInfo.fileName}\n`, err)
   }
